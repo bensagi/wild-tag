@@ -9,7 +9,7 @@ import org.springframework.test.context.DynamicPropertySource;
 
 public class DbTestSimulator {
 
-  static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:13.1")
+  static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:15")
       .withDatabaseName("test")
       .withUsername("test")
       .withPassword("test");
