@@ -14,36 +14,17 @@ import management.entities.AbstractEntity;
 import org.springframework.util.CollectionUtils;
 
 @Entity
-@Table(name = "vulnerabilities")
-public class VulnerabilityDB extends AbstractEntity {
+@Table(name = "users")
+public class User extends AbstractEntity {
 
-  //use enum, but write the integer value on db, for sorting and filtering
-  private VulnerabilitySeverityDB severity;
-
-  @Column(name = "cvss_score")
-  private float cvssScore;
+  @Column(name = "name", columnDefinition = "text")
+  private String name;
 
   @Column(columnDefinition = "text")
-  private String description;
-
-  @Column(name = "cvss_info_set", columnDefinition = "text")
-  @Convert(converter = CvssInfoSetConverter.class)
-  private Set<CvssInfoDB> cvssInfoSet;
-
-  @Column(name = "source_link", columnDefinition = "text")
-  private String sourceLink;
-
-  @Column(name = "additional_references", columnDefinition = "text")
-  @Convert(converter = StringSetConverter.class)
-  private Set<String> additionalReferences;
+  private String email;
 
   @Column(columnDefinition = "text")
-  @Convert(converter = StringSetConverter.class)
-  private Set<String> cwes;
-
-  @Column(columnDefinition = "text")
-  @Convert(converter = StringSetConverter.class)
-  private Set<String> aliases;
+  private String password;
 
 
   //TODO:
@@ -59,7 +40,7 @@ public class VulnerabilityDB extends AbstractEntity {
       OWASP Top 10
    */
 
-  public VulnerabilityDB() {
+  public User() {
   }
 
   public VulnerabilityDB(String cveId) {
