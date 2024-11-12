@@ -4,6 +4,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @MappedSuperclass
 public class AbstractEntity {
@@ -11,20 +12,12 @@ public class AbstractEntity {
   @Id
   protected String id;
 
-  protected void calcAndSetId(String... args) {
-    List<String> argsList = List.of(args);
-    StringBuilder stringBuilder = new StringBuilder();
-    argsList.forEach(arg -> stringBuilder.append(arg).append("."));
-    id = stringBuilder.toString();
+  public AbstractEntity() {
+    this.id = UUID.randomUUID().toString();
   }
 
   public String getId() {
     return id;
-  }
-
-  public AbstractEntity setId(String id) {
-    this.id = id;
-    return this;
   }
 
   @Override

@@ -1,4 +1,4 @@
-package management.entities.vulnerabilities;
+package management.entities.users;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -8,14 +8,12 @@ import jakarta.persistence.Table;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import management.converters.set.CvssInfoSetConverter;
-import management.converters.set.StringSetConverter;
 import management.entities.AbstractEntity;
 import org.springframework.util.CollectionUtils;
 
 @Entity
 @Table(name = "users")
-public class User extends AbstractEntity {
+public class UserDB extends AbstractEntity {
 
   @Column(name = "name", columnDefinition = "text")
   private String name;
@@ -26,96 +24,41 @@ public class User extends AbstractEntity {
   @Column(columnDefinition = "text")
   private String password;
 
-
-  //TODO:
-  /*
-      POC / Exploit and source link
-
-      CISA indication (is exploited in the wild)
-
-      SANS Top 25
-
-      CWE Top 25
-
-      OWASP Top 10
-   */
-
-  public User() {
+  public UserDB() {
+    super();
   }
 
-  public VulnerabilityDB(String cveId) {
-    calcAndSetId(cveId);
+  public UserDB(String name, String email, String password) {
+    super();
+    this.name = name;
+    this.email = email;
+    this.password = password;
   }
 
-  public VulnerabilitySeverityDB getSeverity() {
-    return severity;
+  public String name() {
+    return name;
   }
 
-  public VulnerabilityDB setSeverity(VulnerabilitySeverityDB severity) {
-    this.severity = severity;
+  public UserDB setName(String name) {
+    this.name = name;
     return this;
   }
 
-  public float getCvssScore() {
-    return cvssScore;
+  public String email() {
+    return email;
   }
 
-  public VulnerabilityDB setCvssScore(float cvssScore) {
-    this.cvssScore = cvssScore;
+  public UserDB setEmail(String email) {
+    this.email = email;
     return this;
   }
 
-  public String getDescription() {
-    return description;
+  public String password() {
+    return password;
   }
 
-  public VulnerabilityDB setDescription(String description) {
-    this.description = description;
-    return this;
-  }
-
-  public Set<CvssInfoDB> getCvssInfoSet() {
-    return cvssInfoSet;
-  }
-
-  public VulnerabilityDB setCvssInfoSet(Set<CvssInfoDB> cvssInfoSet) {
-    this.cvssInfoSet = cvssInfoSet;
-    return this;
-  }
-
-  public String getSourceLink() {
-    return sourceLink;
-  }
-
-  public VulnerabilityDB setSourceLink(String sourceLink) {
-    this.sourceLink = sourceLink;
-    return this;
-  }
-
-  public Set<String> getAdditionalReferences() {
-    return additionalReferences;
-  }
-
-  public VulnerabilityDB setAdditionalReferences(Set<String> additionalReferences) {
-    this.additionalReferences = additionalReferences;
-    return this;
-  }
-
-  public Set<String> getCwes() {
-    return cwes;
-  }
-
-  public VulnerabilityDB setCwes(Set<String> cwes) {
-    this.cwes = cwes;
-    return this;
-  }
-
-  public Set<String> getAliases() {
-    return aliases;
-  }
-
-  public VulnerabilityDB setAliases(Set<String> aliases) {
-    this.aliases = aliases;
+  public UserDB setPassword(String password) {
+    this.password = password;
     return this;
   }
 }
