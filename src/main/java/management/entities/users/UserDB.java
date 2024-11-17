@@ -1,16 +1,10 @@
 package management.entities.users;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 import management.entities.AbstractEntity;
 import management.enums.UserRole;
-import org.springframework.util.CollectionUtils;
 
 @Entity
 @Table(name = "users")
@@ -36,7 +30,7 @@ public class UserDB extends AbstractEntity {
     this.role = role;
   }
 
-  public String name() {
+  public String getName() {
     return name;
   }
 
@@ -45,7 +39,7 @@ public class UserDB extends AbstractEntity {
     return this;
   }
 
-  public String email() {
+  public String getEmail() {
     return email;
   }
 
@@ -54,7 +48,7 @@ public class UserDB extends AbstractEntity {
     return this;
   }
 
-    public UserRole role() {
+    public UserRole getRole() {
         return role;
     }
 

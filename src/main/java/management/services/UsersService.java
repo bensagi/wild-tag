@@ -33,9 +33,9 @@ public class UsersService {
 
   public UserDB updateUserByEmail(String userEmail, UserDB user) {
     UserDB userDB = getUserByEmail(userEmail);
-    userDB.setName(user.name());
-    userDB.setEmail(user.email());
-    userDB.setRole(user.role());
+    userDB.setName(user.getName());
+    userDB.setEmail(user.getEmail());
+    userDB.setRole(user.getRole());
     return userRepository.save(userDB);
   }
 
