@@ -20,6 +20,6 @@ class UserRepositoryTest extends DbTestSimulator {
     UserDB u = userRepository.save(new UserDB("name", "abc@google.com", UserRole.ADMIN));
     UserDB udb = userRepository.findById(u.getId()).orElseThrow();
 
-    Assertions.assertEquals("name", udb.name());
+    Assertions.assertEquals("name", udb.getName());
   }
 }
