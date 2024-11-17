@@ -2,7 +2,6 @@ package management.entities;
 
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 

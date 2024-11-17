@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import management.entities.AbstractEntity;
+import management.enums.UserRole;
 import org.springframework.util.CollectionUtils;
 
 @Entity
@@ -22,17 +23,17 @@ public class UserDB extends AbstractEntity {
   private String email;
 
   @Column(columnDefinition = "text")
-  private String password;
+  private UserRole role;
 
   public UserDB() {
     super();
   }
 
-  public UserDB(String name, String email, String password) {
+  public UserDB(String name, String email, UserRole role) {
     super();
     this.name = name;
     this.email = email;
-    this.password = password;
+    this.role = role;
   }
 
   public String name() {
@@ -53,12 +54,11 @@ public class UserDB extends AbstractEntity {
     return this;
   }
 
-  public String password() {
-    return password;
-  }
+    public UserRole role() {
+        return role;
+    }
 
-  public UserDB setPassword(String password) {
-    this.password = password;
-    return this;
+  public void setRole(UserRole role) {
+    this.role = role;
   }
 }
