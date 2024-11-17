@@ -39,7 +39,7 @@ public class UsersController {
   @Secured(UserRoleNames.GLOBAL_ADMIN_ROLE)
   @PostMapping("/users/admin")
   public ResponseEntity<UserDB> createAdmin(UserDB user) {
-    if (!user.getRole().equals(UserRole.ADMIN) || !user.getRole().equals(UserRole.GLOBAL_ADMIN)) {
+    if (!isUserAdmin(user)) {
       throw new IllegalArgumentException("User must have the role of an admin");
     }
     UserDB userDB = usersService.createUser(user);
@@ -49,7 +49,7 @@ public class UsersController {
   @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.GLOBAL_ADMIN_ROLE})
   @PostMapping("/users")
   public ResponseEntity<UserDB> createUser(UserDB user) {
-    if (user.getRole().equals(UserRole.ADMIN) || user.getRole().equals(UserRole.GLOBAL_ADMIN)) {
+    if (isUserAdmin(user)) {
       throw new IllegalArgumentException("User cannot have the role of an admin");
     }
     UserDB userDB = usersService.createUser(user);
@@ -59,8 +59,7 @@ public class UsersController {
   @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.GLOBAL_ADMIN_ROLE})
   @PostMapping("/users/bulk")
   public ResponseEntity<List<UserDB>> createUsers(List<UserDB> users) {
-    if (users.stream()
-        .anyMatch(user -> user.getRole().equals(UserRole.ADMIN) || user.getRole().equals(UserRole.GLOBAL_ADMIN))) {
+    if (users.stream().anyMatch(this::isUserAdmin)) {
       throw new IllegalArgumentException("Users cannot have the role of an admin");
     }
     List<UserDB> createdUsers = usersService.createUsers(users);
@@ -79,5 +78,9 @@ public class UsersController {
   public ResponseEntity<Void> deleteUserByEmail(String userEmail) {
     usersService.deleteUserByEmail(userEmail);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  private boolean isUserAdmin(UserDB user) {
+    return user.getRole().equals(UserRole.ADMIN) || user.getRole().equals(UserRole.GLOBAL_ADMIN);
   }
 }
