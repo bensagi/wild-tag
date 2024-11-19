@@ -1,7 +1,7 @@
 package management.controllers;
 
 import applications.Application;
-import com.example.model.CategoriesApi;
+import com.wild_tag.model.CategoriesApi;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;

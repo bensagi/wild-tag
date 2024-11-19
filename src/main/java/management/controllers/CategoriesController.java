@@ -1,6 +1,6 @@
 package management.controllers;
 
-import com.example.model.CategoriesApi;
+import com.wild_tag.model.CategoriesApi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import management.enums.UserRole.UserRoleNames;
 import management.services.CategoriesService;

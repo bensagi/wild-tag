@@ -1,7 +1,6 @@
 package management.services;
 
-import com.example.model.CategoriesApi;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.wild_tag.model.CategoriesApi;import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;

@@ -30,7 +30,7 @@
               <inputSpec>${project.basedir}/src/main/resources/openapi.yaml</inputSpec>
               <output>${project.build.directory}/generated-sources/openapi</output>
               <generatorName>spring</generatorName>
-              <modelPackage>com.example.model</modelPackage>
+              <modelPackage>com.wild-tag.model</modelPackage>
               <generateApis>false</generateApis> <!-- Prevents API interface generation -->
               <generateModels>true</generateModels> <!-- Ensures model generation -->
               <generateSupportingFiles>false</generateSupportingFiles>
