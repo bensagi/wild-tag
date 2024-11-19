@@ -2,6 +2,8 @@ package management.entities.users;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import management.entities.AbstractEntity;
 import management.enums.UserRole;
@@ -17,6 +19,7 @@ public class UserDB extends AbstractEntity {
   private String email;
 
   @Column(columnDefinition = "text")
+  @Enumerated(EnumType.STRING)
   private UserRole role;
 
   public UserDB() {
