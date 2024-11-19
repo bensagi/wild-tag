@@ -1,11 +1,14 @@
 package management.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
+import java.security.Principal;
 import management.entities.users.UserDB;
 import management.enums.UserRole;
 import management.enums.UserRole.UserRoleNames;
 import management.services.UsersService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +23,14 @@ public class UsersController {
 
   public UsersController(UsersService usersService) {
     this.usersService = usersService;
+  }
+
+  @PostMapping("/login")
+  public ResponseEntity<UserDB> login(HttpServletRequest request) {
+    Principal principal = request.getUserPrincipal();
+    String email = ((UserDB)((UsernamePasswordAuthenticationToken) principal).getPrincipal()).getEmail();
+    UserDB userDB = usersService.getUserByEmail(email);
+    return new ResponseEntity<>(userDB, HttpStatus.OK);
   }
 
   @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.GLOBAL_ADMIN_ROLE})
