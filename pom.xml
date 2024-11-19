@@ -39,12 +39,63 @@
         </dependencies>
       </plugin>
       <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>6.0.1</version> <!-- Use the latest stable version -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${project.basedir}/src/main/resources/openapi.yaml</inputSpec>
+              <output>${project.build.directory}/generated-sources/openapi</output>
+              <generatorName>spring</generatorName>
+              <modelPackage>com.example.model</modelPackage>
+              <generateApis>false</generateApis> <!-- Prevents API interface generation -->
+              <generateModels>true</generateModels> <!-- Ensures model generation -->
+              <generateSupportingFiles>false</generateSupportingFiles>
+              <modelNameSuffix>Api</modelNameSuffix> <!-- Add this line -->
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>${project.build.directory}/generated-sources/openapi</directory>
+      </resource>
+    </resources>
   </build>
   <dependencies>
+    <dependency>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <version>2.2.8</version> <!-- Use the latest stable version -->
+    </dependency>
+    <!-- Javax Servlet API -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>4.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- Javax Validation -->
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>2.0.1.Final</version>
+    </dependency>
+    <!-- Javax Annotation -->
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>1.3.2</version>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -105,6 +156,17 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+      <version>0.2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <version>${spring-security.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
