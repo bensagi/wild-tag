@@ -2,9 +2,10 @@ package management.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import java.sql.Timestamp;
+import jakarta.persistence.Table;
 
-@Entity(name = "categories")
+@Entity
+@Table(name = "categories")
 public class CategoriesDB extends AbstractEntity {
 
   @Column(columnDefinition = "text")
