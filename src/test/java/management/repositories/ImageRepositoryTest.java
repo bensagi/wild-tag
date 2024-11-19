@@ -2,8 +2,11 @@ package management.repositories;
 
 import applications.Application;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Optional;
+import management.entities.images.CoordinateDB;
 import management.entities.images.ImageDB;
+import management.entities.images.ImageStatus;
 import management.entities.users.UserDB;
 import management.enums.UserRole;
 import org.junit.jupiter.api.Assertions;
@@ -24,7 +27,8 @@ public class ImageRepositoryTest {
   public void t() {
     UserDB u1 = userRepository.save(new UserDB("name", "abc@google.com", UserRole.ADMIN));
     UserDB u2 = userRepository.save(new UserDB("name", "efg@google.com", UserRole.ADMIN));
-    ImageDB image = new ImageDB("gcsPath", null, u1, u2, new ArrayList<>(), "taggedPath");
+    CoordinateDB coordinateDB = new CoordinateDB("1", 0.67, 0.5, 0.7, 0.3);
+    ImageDB image = new ImageDB("gcsPath", ImageStatus.PENDING, u1, u2, Collections.singletonList(coordinateDB), "taggedPath");
     image = imageRepository.save(image);
 
     Optional<ImageDB> imageOptional = imageRepository.findById(image.getId());
