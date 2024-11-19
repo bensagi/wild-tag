@@ -3,6 +3,8 @@ package management.entities.images;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.List;
@@ -15,7 +17,8 @@ public class ImageDB extends AbstractEntity {
   @Column(name = "gcsFullPath", columnDefinition = "text")
   private String gcsFullPath;
   @Column(name = "status", columnDefinition = "text")
-  private String status;
+  @Enumerated(EnumType.STRING)
+  private ImageStatus status;
   @ManyToOne
   private UserDB taggerUser;
   @ManyToOne
@@ -30,7 +33,7 @@ public class ImageDB extends AbstractEntity {
     super();
   }
 
-  public ImageDB(String gcsFullPath, String status, UserDB taggerUser, UserDB validatorUser, List<CoordinateDB> coordinates, String gcsTaggedPath) {
+  public ImageDB(String gcsFullPath, ImageStatus status, UserDB taggerUser, UserDB validatorUser, List<CoordinateDB> coordinates, String gcsTaggedPath) {
     super();
     this.gcsFullPath = gcsFullPath;
     this.status = status;
@@ -49,11 +52,11 @@ public class ImageDB extends AbstractEntity {
     return this;
   }
 
-  public String getStatus() {
+  public ImageStatus getStatus() {
     return status;
   }
 
-  public ImageDB setStatus(String status) {
+  public ImageDB setStatus(ImageStatus status) {
     this.status = status;
     return this;
   }
