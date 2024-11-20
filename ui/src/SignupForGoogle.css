@@ -1,0 +1,102 @@
+/* Main Container */
+.signup-container {
+    display: flex;
+    width: 1320px; /* Total width of the app */
+    height: 1024px; /* Ensuring both sides are the same height */
+    margin: auto;
+}
+
+/* Left Side */
+.left-side {
+    width: 720px; /* Fixed width */
+    height: 1024px; /* Fixed height */
+    background: radial-gradient(50% 50% at 50% 50%, #66FF66 0%, #009933 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-slider {
+    width: 600px;
+    height: 860px;
+}
+
+.slider-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Right Side */
+.right-side {
+    width: 600px; /* Fixed width */
+    height: 1024px; /* Fixed height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+/* Card Styling */
+.card {
+    width: 90%; /* Slightly reduced width for padding */
+    text-align: center;
+}
+
+.paw-icon {
+    width: 50px;
+    margin-bottom: 15px;
+}
+
+.company-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2a2a2a;
+    margin-bottom: 10px;
+}
+
+.tagline {
+    font-size: 16px;
+    color: #5a5a5a;
+    margin-bottom: 20px;
+}
+
+.google-login-button {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.terms {
+    font-size: 12px;
+    color: #7a7a7a;
+    line-height: 1.5;
+}
+
+.terms a {
+    color: #0073e6;
+    text-decoration: none;
+}
+
+.terms a:hover {
+    text-decoration: underline;
+}
+
+
+.link-button {
+    background: none;
+    border: none;
+    color: #0073e6;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+}
+
+.link-button:hover {
+    color: #005bb5;
+}
