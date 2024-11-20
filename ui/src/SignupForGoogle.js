@@ -9,53 +9,32 @@ const images = [
     { url: '/image_3.png', alt: 'Image 3' },
 ];
 
-function decodeJWT(token) {
-    try {
-        // Split the JWT into its parts
-        const base64Payload = token.split('.')[1]; // Get the payload part
-        const jsonPayload = atob(base64Payload); // Decode Base64
-        return JSON.parse(jsonPayload); // Parse JSON
-    } catch (error) {
-        console.error('Failed to decode JWT:', error);
-        return null;
-    }
-}
-
 function SignupForGoogle({ onLoginSuccess }) {
     const handleLoginSuccess = async (credentialResponse) => {
         const jwtToken = credentialResponse.credential;
 
-        // Save the JWT to localStorage for later use
-        localStorage.setItem('authToken', jwtToken);
+        // Save the JWT and send it to the server for validation
+        try {
+            const response = await fetch('http://localhost:8080/wild-tag/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwtToken}`,
+                },
+                body: JSON.stringify({}),
+            });
 
-        const decodedToken = decodeJWT(jwtToken);
-        if (decodedToken) {
-            const email = decodedToken.email || 'Unknown Email';
-            console.log('Email extracted from JWT:', email);
+            if (response.ok) {
+                const data = await response.json(); // Get the user data from the response
+                console.log('Server Response:', data);
 
-            // Send the token to the server with Authorization header
-            try {
-                const response = await fetch('http://localhost:8080/wild-tag/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${jwtToken}`,
-                    },
-                    body: JSON.stringify({}),
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Server Response:', data);
-                    onLoginSuccess(email); // Notify parent component or redirect
-                } else {
-                    console.error('Failed to log in to server:', response.statusText);
-                }
-            } catch (error) {
-                console.error('Error logging in to server:', error);
+                // Notify parent component with the token and user data
+                onLoginSuccess(jwtToken, data);
+            } else {
+                console.error('Failed to log in to server:', response.statusText);
             }
-        } else {
-            console.error('Failed to extract email from credential.');
+        } catch (error) {
+            console.error('Error logging in to server:', error);
         }
     };
 
@@ -65,16 +44,18 @@ function SignupForGoogle({ onLoginSuccess }) {
 
     return (
         <div className="signup-container">
-            {/* Left Side: Image Slider */}
             <div className="left-side">
                 <ImageSlider images={images} />
             </div>
-
-            {/* Right Side: Signup Form */}
             <div className="right-side">
                 <div className="card">
                     <div className="logo">
-                        <img src="/Israel_NPA_2014_Logo.svg" alt="Company Logo" className="paw-icon" style={{ width: '160px', height: '140px' }}/>
+                        <img
+                            src="/Israel_NPA_2014_Logo.svg"
+                            alt="Company Logo"
+                            className="paw-icon"
+                            style={{ width: '160px', height: '140px' }}
+                        />
                     </div>
                     <h1 className="company-name">Israel Nature and Parks Authority</h1>
                     <div className="google-login-button">
@@ -85,11 +66,17 @@ function SignupForGoogle({ onLoginSuccess }) {
                     </div>
                     <p className="terms">
                         By logging in or signing up, you agree to our policies, including our{' '}
-                        <button className="link-button" onClick={() => alert('Terms of Service')}>
+                        <button
+                            className="link-button"
+                            onClick={() => alert('Terms of Service')}
+                        >
                             Terms of Service
                         </button>{' '}
                         and{' '}
-                        <button className="link-button" onClick={() => alert('Privacy Policy')}>
+                        <button
+                            className="link-button"
+                            onClick={() => alert('Privacy Policy')}
+                        >
                             Privacy Policy
                         </button>
                     </p>

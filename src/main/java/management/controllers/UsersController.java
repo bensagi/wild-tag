@@ -11,8 +11,10 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 
@@ -69,7 +71,7 @@ public class UsersController {
 
   @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.GLOBAL_ADMIN_ROLE})
   @PostMapping("/users/bulk")
-  public ResponseEntity<List<UserDB>> createUsers(List<UserDB> users) {
+  public ResponseEntity<List<UserDB>> createUsers(@RequestBody List<UserDB> users) {
     if (users.stream().anyMatch(this::isUserAdmin)) {
       throw new IllegalArgumentException("Users cannot have the role of an admin");
     }
@@ -77,16 +79,17 @@ public class UsersController {
     return new ResponseEntity<>(createdUsers, HttpStatus.CREATED);
   }
 
+
   @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.GLOBAL_ADMIN_ROLE})
   @PostMapping("/users/{userEmail}")
-  public ResponseEntity<UserDB> updateUserByEmail(String userEmail, UserDB user) {
+  public ResponseEntity<UserDB> updateUserByEmail(@PathVariable String userEmail, @RequestBody UserDB user) {
     UserDB updatedUser = usersService.updateUserByEmail(userEmail, user);
     return new ResponseEntity<>(updatedUser, HttpStatus.OK);
   }
 
   @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.GLOBAL_ADMIN_ROLE})
   @DeleteMapping("/users/{userEmail}")
-  public ResponseEntity<Void> deleteUserByEmail(String userEmail) {
+  public ResponseEntity<Void> deleteUserByEmail(@PathVariable String userEmail) {
     usersService.deleteUserByEmail(userEmail);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }

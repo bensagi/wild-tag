@@ -32,11 +32,10 @@ public class UsersService {
   }
 
   public UserDB updateUserByEmail(String userEmail, UserDB user) {
-    UserDB userDB = getUserByEmail(userEmail);
-    userDB.setName(user.getName());
-    userDB.setEmail(user.getEmail());
-    userDB.setRole(user.getRole());
-    return userRepository.save(userDB);
+    UserDB currUserDB = getUserByEmail(userEmail);
+    UserDB newUserDB = new UserDB(user.getName(), user.getEmail(), user.getRole());
+    userRepository.deleteById(currUserDB.getId());
+    return userRepository.save(newUserDB);
   }
 
   public void deleteUserByEmail(String userEmail) {
