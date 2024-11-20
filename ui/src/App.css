@@ -1,158 +1,42 @@
-/* Reset styles */
-body, h1, p, a, img, button, div {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-  }
-  
-  /* Body and container styling */
-  body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background-color: #f9f9f9;
-    overflow: hidden;
-  }
-  
-  .app-container {
-    display: flex;
-    width: 1320px; /* Total width of left (720) + right (600) sides */
-    height: 1024px; /* Ensuring both sides are the same height */
-  }
-  
-  /* Left side styling */
-  .left-side {
-    width: 720px;
-    height: 1024px;
-    background: radial-gradient(50% 50% at 50% 50%, #66FF66 0%, #009933 100%); /* Updated green gradient */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .image-slider {
-    position: relative;
-    width: 600px;
-    height: 860px;
-  }
-  
-  .slider-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
-    transition: transform 0.8s ease-in-out; /* Smooth sliding animation */
-  }
-  
-  .dots {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 10px;
-  }
-  
-  .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-  }
-  
-  .dot.active {
-    background-color: rgba(255, 255, 255, 1);
-  }
-  
-  /* Arrows styling */
-  .arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
-    color: #ffffff;
-    border: none;
-    padding: 10px;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 1;
-  }
-  
-  .left-arrow {
-    left: 10px;
-  }
-  
-  .right-arrow {
-    right: 10px;
-  }
-  
-  .arrow:hover {
-    background-color: rgba(0, 0, 0, 0.7);
-  }
-  
-  /* Right side styling */
-  .right-side {
-    width: 600px;
-    height: 1024px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #ffffff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-  }
-  
-  /* Card styling */
-  .card {
-    width: 90%; /* Reducing width slightly to add space around card */
-    text-align: center;
-  }
-  
-  /* Logo styling */
-  .paw-icon {
-    width: 50px;
-    margin-bottom: 15px;
-  }
-  
-  /* Company name styling */
-  .company-name {
-    font-size: 24px;
-    font-weight: bold;
-    color: #2a2a2a;
-    margin-bottom: 10px;
-  }
-  
-  /* Tagline styling */
-  .tagline {
-    font-size: 16px;
-    color: #5a5a5a;
-    margin-bottom: 20px;
-  }
-  
-  /* Google button styling */
-  .google-login-button {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-  
-  /* Terms styling */
-  .terms {
-    font-size: 12px;
-    color: #7a7a7a;
-    line-height: 1.5;
-  }
-  
-  .terms a {
-    color: #0073e6;
-    text-decoration: none;
-  }
-  
-  .terms a:hover {
-    text-decoration: underline;
-  }
-  
+/* Reset Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  overflow: visible; /* Ensure dropdown is not clipped */
+}
+
+.authenticated-layout {
+  display: flex;
+  height: 100vh;
+}
+
+.main-content {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 60px); /* Account for Topbar height */
+}
+
+.page-content {
+  flex-grow: 1;
+  background-color: #fafafa;
+  padding: 20px;
+  overflow-y: auto;
+}

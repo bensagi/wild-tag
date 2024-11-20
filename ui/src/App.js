@@ -1,47 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
-import { GoogleLogin } from '@react-oauth/google';
-import ImageSlider from './imageSlider';
-
-const images = [
-  { url: '/image_1.png', alt: 'Image 1' },
-  { url: '/image_2.png', alt: 'Image 2' },
-  { url: '/image_3.png', alt: 'Image 3' }
-];
+import SignupForGoogle from './SignupForGoogle';
+import Dashboard from './Dashboard';
 
 function App() {
-  const handleLoginSuccess = (credentialResponse) => {
-    console.log('Login Success:', credentialResponse);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
+
+  const handleLoginSuccess = (email) => {
+    setUsername(email);
+    setIsLoggedIn(true);
   };
 
-  const handleLoginFailure = (error) => {
-    console.error('Login Failed:', error);
+  const handleLogout = () => {
+    setUsername(''); // Clear the username
+    setIsLoggedIn(false); // Return to the login page
   };
 
   return (
     <div className="app-container">
-      <div className="left-side">
-        <ImageSlider images={images} />
-      </div>
-      <div className="right-side">
-        <div className="card">
-          <div className="logo">
-            <img src="/paw.png" alt="Company Logo" className="paw-icon" />
-          </div>
-          <h1 className="company-name">Company name</h1>
-          <p className="tagline">Create your free account</p>
-          <div className="google-login-button">
-            <GoogleLogin
-              onSuccess={handleLoginSuccess}
-              onError={handleLoginFailure}
-            />
-          </div>
-          <p className="terms">
-            By logging in or signing up, you agree to our policies, including our
-            <a href="#"> Terms of Service </a> and <a href="#"> Privacy Policy </a>
-          </p>
-        </div>
-      </div>
+      {isLoggedIn ? (
+        <Dashboard username={username} handleLogout={handleLogout} />
+      ) : (
+        <SignupForGoogle onLoginSuccess={handleLoginSuccess} />
+      )}
     </div>
   );
 }

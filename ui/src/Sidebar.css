@@ -1,0 +1,28 @@
+/* Sidebar Container */
+.sidebar {
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    height: 100%;
+}
+
+/* Sidebar Items */
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    cursor: pointer;
+    color: #fff;
+}
+
+.sidebar-item:hover {
+    background-color: #444;
+}
+
+.sidebar-icon {
+    margin-right: 10px;
+    font-size: 20px;
+}

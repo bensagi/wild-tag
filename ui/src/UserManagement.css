@@ -1,0 +1,87 @@
+/* General User Management Page Styling */
+.user-management-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #fafafa;
+    padding: 20px;
+}
+
+.user-management-page h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Add Users Button */
+.add-users-btn {
+    width: 140px;
+    height: 40px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: auto;
+    display: block;
+    text-align: center;
+}
+
+.add-users-btn:hover {
+    background-color: #45a049;
+}
+
+/* Table Styling */
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    margin-top: 20px;
+}
+
+.user-table th, .user-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.user-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+/* Dropdown Actions Styling */
+.actions-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.ellipsis-icon {
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    display: block;
+    position: absolute;
+    right: 0;
+    z-index: 9999;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-width: 150px;
+}
+
+.dropdown-menu button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.dropdown-menu button:hover {
+    background-color: #f5f5f5;
+}
