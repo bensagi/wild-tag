@@ -1,95 +1,26 @@
-/* Topbar Container */
 .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    background-color: #f5f5f5; /* Light gray Topbar */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #f5f5f5;
-    height: 64px;
-    padding: 0 32px;
+    padding: 16px 32px;
+    z-index: 1001; /* Above Sidebar */
     border-bottom: 1px solid #ddd;
-    z-index: 10; /* Ensure Topbar is above other elements */
 }
 
-/* Left Section (Logo and Company Name) */
 .left-section {
     display: flex;
     align-items: center;
+    gap: 12px;
 }
 
-.paw-icon {
-    width: 36px;
-    height: 36px;
-    margin-right: 12px;
-}
-
-.company-name {
-    font-size: 20px;
-    font-weight: bold;
-    color: #333;
-}
-
-/* Right Section (Icons and User Profile) */
 .right-section {
     display: flex;
     align-items: center;
-    gap: 24px;
-}
-
-.topbar-icon {
-    font-size: 20px;
-    cursor: pointer;
-    color: #555;
-}
-
-.user-profile {
-    position: relative;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
-
-/* Dropdown Wrapper for Username and Arrow */
-.dropdown-wrapper {
-    display: flex;
-    align-items: center;
-    margin-left: 8px;
-}
-
-.username {
-    font-size: 16px;
-    color: #333;
-    margin-right: 4px;
-}
-
-.dropdown-arrow {
-    font-size: 12px;
-    color: #333;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: calc(100% + 8px); /* Ensure it appears directly below */
-    right: 0; /* Align with the right side */
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-    z-index: 1000; /* Ensure it's above other elements */
-    width: 150px;
-    text-align: center;
-}
-
-
-.dropdown-item {
-    padding: 12px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    color: #333;
-    text-align: center;
-    background: none;
-    border: none;
-}
-
-.dropdown-item:hover {
-    background-color: #f0f0f0;
+    gap: 16px;
 }

@@ -23,7 +23,6 @@ function Topbar({ username, handleLogout }) {
                 <FaQuestionCircle className="topbar-icon" />
                 <FaBell className="topbar-icon" />
                 <div className="user-profile">
-                    <FaUserCircle className="user-icon" />
                     <div className="dropdown-wrapper" onClick={toggleDropdown}>
                         <span className="username">{username || 'Guest'}</span>
                         <span className="dropdown-arrow">▼</span>

@@ -2,15 +2,22 @@
 .user-management-page {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    width: calc(100% - 100px); /* Adjust width to account for the Sidebar */
+    margin-left: 100px; /* Align content after the Sidebar */
+    margin-top: 64px; /* Align content below the Topbar */
+    height: calc(100vh - 64px);
     font-family: Arial, sans-serif;
-    background-color: #fafafa;
+    background-color: #fff;
     padding: 20px;
+    gap: 20px;
 }
 
+/* Title */
 .user-management-page h1 {
     font-size: 24px;
-    margin-bottom: 20px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 16px;
 }
 
 /* Add Users Button */
@@ -18,14 +25,12 @@
     width: 140px;
     height: 40px;
     background-color: #4CAF50;
-    color: white;
+    color: #fff;
     border: none;
     border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
-    margin-left: auto;
-    display: block;
-    text-align: center;
+    align-self: flex-end;
 }
 
 .add-users-btn:hover {
@@ -37,11 +42,13 @@
     width: 100%;
     border-collapse: collapse;
     background-color: #fff;
-    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.user-table th, .user-table td {
-    padding: 10px;
+.user-table th,
+.user-table td {
+    padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
@@ -55,10 +62,6 @@
 .actions-dropdown {
     position: relative;
     display: inline-block;
-}
-
-.ellipsis-icon {
-    cursor: pointer;
 }
 
 .dropdown-menu {
@@ -86,8 +89,6 @@
     background-color: #f5f5f5;
 }
 
-
-
 /* Modal Styling */
 .modal {
     position: fixed;
@@ -112,54 +113,6 @@
 }
 
 .modal-content h2 {
-    margin-bottom: 15px;
     font-size: 20px;
-}
-
-.modal-content textarea {
-    width: 100%;
-    height: 80px;
     margin-bottom: 15px;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.modal-content select {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: space-between;
-}
-
-.cancel-btn,
-.send-invite-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.cancel-btn {
-    background-color: #f5f5f5;
-    color: #333;
-}
-
-.cancel-btn:hover {
-    background-color: #ddd;
-}
-
-.send-invite-btn {
-    background-color: #4CAF50;
-    color: #fff;
-}
-
-.send-invite-btn:hover {
-    background-color: #45a049;
 }

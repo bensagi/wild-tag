@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import SignupForGoogle from './SignupForGoogle';
 import Dashboard from './Dashboard';
@@ -9,7 +10,7 @@ function App() {
   const [role, setRole] = useState('');
   const [idleTimeout, setIdleTimeout] = useState(null);
 
-  const INACTIVITY_LIMIT = 10 * 60 * 1000; // 10 minutes
+  const INACTIVITY_LIMIT = 30 * 60 * 1000; // 10 minutes
 
   const handleLoginSuccess = (token, userData) => {
     const base64Payload = token.split('.')[1]; // JWT payload is the second part
@@ -82,13 +83,15 @@ function App() {
   }, []);
 
   return (
-      <div className="app-container">
-        {isLoggedIn ? (
-            <Dashboard username={username} role={role} handleLogout={handleLogout} />
-        ) : (
-            <SignupForGoogle onLoginSuccess={handleLoginSuccess} />
-        )}
-      </div>
+      <Router>
+        <div className="app-container">
+          {isLoggedIn ? (
+              <Dashboard username={username} handleLogout={handleLogout} />
+          ) : (
+              <SignupForGoogle onLoginSuccess={handleLoginSuccess} />
+          )}
+        </div>
+      </Router>
   );
 }
 
