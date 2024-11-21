@@ -1,7 +1,6 @@
 package management.repositories;
 
 import applications.Application;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import management.entities.images.CoordinateDB;
