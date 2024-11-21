@@ -21,14 +21,14 @@ public class CategoriesController {
 
   // GET /categories - Returns a JSON list of categories
   @GetMapping
-  @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.GLOBAL_ADMIN_ROLE, UserRoleNames.USER_ROLE})
+  @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.USER_ROLE})
   public ResponseEntity<CategoriesApi> getCategories() throws JsonProcessingException {
     return new ResponseEntity<>(categoriesService.getCategories(), HttpStatus.OK);
   }
 
   // PUT /categories - Overrides the existing saved JSON list
   @PutMapping
-  @Secured(UserRoleNames.GLOBAL_ADMIN_ROLE)
+  @Secured(UserRoleNames.ADMIN_ROLE)
   public ResponseEntity<String> putCategories(@RequestBody CategoriesApi newCategories) throws JsonProcessingException {
     if (newCategories != null) {
       categoriesService.setCategories(newCategories.getEntries());

@@ -1,7 +1,8 @@
-create table users (
-    id varchar(255) not null,
-    name text,
-    email text,
+create table users
+(
+    id       UUID DEFAULT gen_random_uuid() not null,
+    name     text,
+    email    text,
     password text,
     primary key (id)
 );
