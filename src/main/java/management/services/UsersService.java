@@ -28,9 +28,13 @@ public class UsersService {
     return userDBS.stream().map(UserConverter::convertUserDBToUser).collect(Collectors.toList());
   }
 
-  public UserApi getUserByEmail(String userEmail) {
+  public UserApi getUserByEmailByUserApi(String userEmail) {
     UserDB userDB = userRepository.findByEmail(userEmail).orElseThrow();
     return convertUserDBToUser(userDB);
+  }
+
+  public UserDB getUserByEmailByUserDb(String userEmail) {
+    return userRepository.findByEmail(userEmail).orElseThrow();
   }
 
   public UserApi createUser(UserApi user) {
@@ -44,15 +48,14 @@ public class UsersService {
   }
 
   public UserApi updateUserByEmail(String userEmail, UserApi user) {
-    UserApi currUserDB = getUserByEmail(userEmail);
+    UserDB currUserDB = getUserByEmailByUserDb(userEmail);
     UserDB newUserDB = new UserDB(user.getName(), user.getEmail(), UserRole.valueOf(user.getRole().name()));
-    userRepository.deleteById(UUID.fromString(currUserDB.getId()));
+    userRepository.deleteById(currUserDB.getId());
     newUserDB = userRepository.save(newUserDB);
     return convertUserDBToUser(newUserDB);
   }
 
   public void deleteUserByEmail(String userEmail) {
-    UserApi user = getUserByEmail(userEmail);
-    userRepository.delete(convertUserToUserDB(user));
+    userRepository.delete(getUserByEmailByUserDb(userEmail));
   }
 }

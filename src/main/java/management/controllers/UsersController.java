@@ -27,7 +27,7 @@ public class UsersController {
 
   @PostMapping("/login")
   public ResponseEntity<UserApi> login(@UserPrincipalParam("email") String email) {
-    UserApi userDB = usersService.getUserByEmail(email);
+    UserApi userDB = usersService.getUserByEmailByUserApi(email);
     return new ResponseEntity<>(userDB, HttpStatus.OK);
   }
 
@@ -41,7 +41,7 @@ public class UsersController {
   @Secured({UserRoleNames.ADMIN_ROLE})
   @GetMapping("/users/{userEmail}")
   public ResponseEntity<UserApi> getUserByEmail(@PathVariable String userEmail) {
-    UserApi user = usersService.getUserByEmail(userEmail);
+    UserApi user = usersService.getUserByEmailByUserApi(userEmail);
     return new ResponseEntity<>(user, HttpStatus.OK);
   }
 
