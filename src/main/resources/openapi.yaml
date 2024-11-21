@@ -127,6 +127,36 @@ paths:
           schema:
             type: string
 
+  /images:
+    get:
+      summary: Returns a JSON list of images.
+      description: Fetches the current list of images.
+      responses:
+        '200':
+          description: A JSON list of images.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Image'
+
+  /images/upload:
+    post:
+      summary: Loads bucket of images.
+      description: Loads a bucket of images to the server.
+      requestBody:
+        description: The bucket of images to load.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImagesBucket'
+      responses:
+        '200':
+          description: Successfully loaded images.
+
+
 components:
   schemas:
     Categories:
@@ -158,5 +188,34 @@ components:
           description: The user's email address
         role:
           $ref: '#/components/schemas/Role'
+
+    ImagesBucket:
+      type: object
+      properties:
+        bucketName:
+          type: string
+          description: The name of the bucket containing the images
+
+    ImageStatus:
+      type: string
+      enum: [ PENDING, TAGGED, VALIDATED ]
+
+    Image:
+      type: object
+      properties:
+        gcsFullPath:
+          type: string
+          description: The full path of the image in the Google Cloud Storage
+        status:
+          $ref: '#/components/schemas/ImageStatus'
+        taggerUserId:
+          type: string
+          description: The ID of the user who tagged the image
+        validatorUserId:
+          type: string
+          description: The ID of the user who validated the image
+        gcsTaggedPath:
+          type: string
+          description: The full path of the tagged image in the Google Cloud Storage
 
 
