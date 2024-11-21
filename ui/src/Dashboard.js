@@ -1,4 +1,5 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import './Dashboard.css';
 import Topbar from './Topbar';
 import Sidebar from './Sidebar';
@@ -11,7 +12,10 @@ function Dashboard({ username, handleLogout }) {
             <div className="main-content">
                 <Sidebar />
                 <div className="page-content">
-                    <UserManagement />
+                    <Routes>
+                        <Route path="/" element={<div>Welcome to the Home Page</div>} />
+                        <Route path="/settings" element={<UserManagement />} />
+                    </Routes>
                 </div>
             </div>
         </div>
