@@ -11,7 +11,7 @@ function UserManagement() {
     const [showChangeRoleModal, setShowChangeRoleModal] = useState(false);
     const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
     const [newUsers, setNewUsers] = useState("");
-    const [role, setRole] = useState("CONTRIBUTOR");
+    const [role, setRole] = useState("USER");
     const [selectedUser, setSelectedUser] = useState(null);
 
     useEffect(() => {
@@ -81,7 +81,7 @@ function UserManagement() {
         if (selectedUser && role) {
             try {
                 const response = await fetch(`http://localhost:8080/wild-tag/users/${selectedUser.email}`, {
-                    method: 'POST',
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -205,8 +205,7 @@ function UserManagement() {
                         <p>Select Role:</p>
                         <select value={role} onChange={(e) => setRole(e.target.value)}>
                             <option value="ADMIN">Admin</option>
-                            <option value="CONTRIBUTOR">Contributor</option>
-                            <option value="VALIDATOR">Validator</option>
+                            <option value="USER">User</option>
                         </select>
                         <div className="modal-actions">
                             <button className="cancel-btn" onClick={() => setShowAddUsersModal(false)}>
@@ -228,8 +227,7 @@ function UserManagement() {
                         <p>Select a new role:</p>
                         <select value={role} onChange={(e) => setRole(e.target.value)}>
                             <option value="ADMIN">Admin</option>
-                            <option value="CONTRIBUTOR">Contributor</option>
-                            <option value="VALIDATOR">Validator</option>
+                            <option value="USER">User</option>
                         </select>
                         <div className="modal-actions">
                             <button className="cancel-btn" onClick={() => setShowChangeRoleModal(false)}>
