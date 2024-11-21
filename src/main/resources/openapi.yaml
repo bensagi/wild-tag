@@ -155,7 +155,34 @@ paths:
       responses:
         '200':
           description: Successfully loaded images.
-
+  /images/tag:
+    put:
+      summary: update image.
+      description: update image.
+      requestBody:
+        description: Image object that needs to be updated.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Image'
+      responses:
+        '200':
+          description: Successfully tagged image.
+  /images/validate:
+    put:
+      summary: update image.
+      description: update image.
+      requestBody:
+        description: Image object that needs to be updated.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Image'
+      responses:
+        '200':
+          description: Successfully validated image.
 
 components:
   schemas:
@@ -203,11 +230,18 @@ components:
     Image:
       type: object
       properties:
+        id:
+          type: string
+          description: The unique identifier of the image.
         gcsFullPath:
           type: string
           description: The full path of the image in the Google Cloud Storage
         status:
           $ref: '#/components/schemas/ImageStatus'
+        coordinates:
+          type: 'array'
+          items:
+            $ref: '#/components/schemas/Coordinates'
         taggerUserId:
           type: string
           description: The ID of the user who tagged the image
@@ -218,4 +252,25 @@ components:
           type: string
           description: The full path of the tagged image in the Google Cloud Storage
 
-
+    Coordinates:
+      type: object
+      properties:
+        animalId:
+          type: string
+          description: The unique identifier of the animal.
+        xCenter:
+          type: number
+          format: double
+          description: the x axis value of the center of the animal.
+        yCenter:
+          type: number
+          format: double
+          description: the y axis value of the center of the animal.
+        width:
+          type: number
+          format: double
+          description: the width of the animal.
+        height:
+          type: number
+          format: double
+          description: the height of the animal.

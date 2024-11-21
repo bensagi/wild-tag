@@ -79,11 +79,11 @@ public class ImageDB extends AbstractEntity {
     return this;
   }
 
-  public List<CoordinateDB> getJson() {
+  public List<CoordinateDB> getCoordinates() {
     return coordinates;
   }
 
-  public ImageDB setJson(List<CoordinateDB> json) {
+  public ImageDB setCoordinates(List<CoordinateDB> json) {
     this.coordinates = json;
     return this;
   }

@@ -1,7 +1,7 @@
 package management.entities.images;
 
 public class CoordinateDB {
-  private String id;
+  private String animalId;
   private double x_center;
   private double y_center;
   private double height;
@@ -11,19 +11,19 @@ public class CoordinateDB {
   }
 
   public CoordinateDB(String id, double x_center, double y_center, double height, double width) {
-    this.id = id;
+    this.animalId = id;
     this.x_center = x_center;
     this.y_center = y_center;
     this.height = height;
     this.width = width;
   }
 
-  public String getId() {
-    return id;
+  public String getAnimalId() {
+    return animalId;
   }
 
-  public CoordinateDB setId(String id) {
-    this.id = id;
+  public CoordinateDB setAnimalId(String animalId) {
+    this.animalId = animalId;
     return this;
   }
 

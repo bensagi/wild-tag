@@ -1,13 +1,13 @@
 package management.controllers;
 
-import jakarta.servlet.http.HttpServletRequest;
-import java.security.Principal;
-import management.entities.users.UserDB;
+import com.wild_tag.model.UserApi;
+import java.util.List;
 import management.enums.UserRole.UserRoleNames;
+import management.security.UserPrincipalParam;
 import management.services.UsersService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,9 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
-import org.springframework.http.ResponseEntity;
-import com.wild_tag.model.UserApi;
 
 @RestController
 public class UsersController {
@@ -29,9 +26,7 @@ public class UsersController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<UserApi> login(HttpServletRequest request) {
-    Principal principal = request.getUserPrincipal();
-    String email = ((UserDB) ((UsernamePasswordAuthenticationToken) principal).getPrincipal()).getEmail();
+  public ResponseEntity<UserApi> login(@UserPrincipalParam("email") String email) {
     UserApi userDB = usersService.getUserByEmail(email);
     return new ResponseEntity<>(userDB, HttpStatus.OK);
   }
