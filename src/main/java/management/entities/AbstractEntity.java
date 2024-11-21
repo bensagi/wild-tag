@@ -1,5 +1,7 @@
 package management.entities;
 
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import java.util.Objects;
@@ -9,13 +11,13 @@ import java.util.UUID;
 public class AbstractEntity {
 
   @Id
-  protected String id;
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  protected UUID id;
 
   public AbstractEntity() {
-    this.id = UUID.randomUUID().toString();
   }
 
-  public String getId() {
+  public UUID getId() {
     return id;
   }
 

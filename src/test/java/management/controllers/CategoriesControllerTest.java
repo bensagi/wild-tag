@@ -57,7 +57,7 @@ public class CategoriesControllerTest {
   }
 
   @Test
-  @WithMockUser(roles = {"GLOBAL_ADMIN"})
+  @WithMockUser(roles = {"ADMIN"})
   public void testPutCategories() throws Exception {
     CategoriesApi newCategories = new CategoriesApi(); // Assume a valid CategoriesApi object
     Map<String, String> entries = new HashMap<>();

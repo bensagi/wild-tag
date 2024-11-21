@@ -30,6 +30,103 @@ paths:
       responses:
         '200':
           description: Successfully updated categories.
+
+  /users:
+    get:
+      summary: Returns a JSON list of users.
+      description: Fetches the current list of users.
+      responses:
+        '200':
+          description: A JSON list of users.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: Adds a new user.
+      description: Adds a new user to the list of users.
+      requestBody:
+        description: User object to add.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Successfully added user.
+
+  /users/bulk:
+    post:
+      summary: Adds multiple users.
+      description: Adds multiple users to the list of users.
+      requestBody:
+        description: List of user objects to add.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Successfully added users.
+
+  /users/{email}:
+    get:
+      summary: Returns a user by email.
+      description: Fetches a user by their email address.
+      responses:
+        '200':
+          description: A user object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      parameters:
+        - name: email
+          in: path
+          description: The email address of the user to fetch.
+          required: true
+          schema:
+            type: string
+    delete:
+      summary: Deletes a user by email.
+      description: Deletes a user by their email address.
+      responses:
+        '200':
+          description: Successfully deleted user.
+      parameters:
+        - name: email
+          in: path
+          description: The email address of the user to delete.
+          required: true
+          schema:
+            type: string
+    put:
+      summary: Updates a user by email.
+      description: Updates a user by their email address.
+      requestBody:
+        description: User object to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Successfully updated user.
+      parameters:
+        - name: email
+          in: path
+          description: The email address of the user to update.
+          required: true
+          schema:
+            type: string
+
 components:
   schemas:
     Categories:
@@ -40,3 +137,26 @@ components:
           additionalProperties:
             type: string
             description: Hebrew string representing the category name
+
+    Role:
+      type: string
+      enum:
+        - ADMIN
+        - USER
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The user's ID
+        name:
+          type: string
+          description: The user's name
+        email:
+          type: string
+          description: The user's email address
+        role:
+          $ref: '#/components/schemas/Role'
+
+
