@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-message-wild-processor
+  labels:
+    app: image-message-wild-processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-message-wild-processor
+  template:
+    metadata:
+      labels:
+        app: image-message-wild-processor
+    spec:
+      containers:
+        - name: image-message-wild-processor
+          image: "me-west1-docker.pkg.dev/gcp-etigcp-nprd-12855/wild-tag/server:{{ .Values.core.imageTag }}"
+          command:
+          - "java"
+          - "-Xmx512m"
+          - "-jar"
+          - "wild-tag-latest.jar"
+          - "applications.ImageMessagesProcessor"
+          envFrom:
+            - configMapRef:
+                name: wild-config
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1G"
+              cpu: "1"
+          imagePullPolicy: IfNotPresent
+
+      imagePullSecrets:
+        - name: regcred
