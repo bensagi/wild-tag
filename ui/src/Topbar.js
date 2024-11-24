@@ -1,17 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Topbar.css';
 import { FaBell, FaQuestionCircle, FaUserCircle } from 'react-icons/fa';
 
 function Topbar({ username, handleLogout }) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef();
 
     const toggleDropdown = (e) => {
         e.stopPropagation(); // Prevent event bubbling
-        setIsDropdownOpen((prevState) => {
-            console.log('Previous State:', prevState);
-            return !prevState;
-        });
+        setIsDropdownOpen((prevState) => !prevState);
     };
+
+    const handleClickOutside = (event) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            setIsDropdownOpen(false);
+        }
+    };
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     return (
         <div className="topbar">
@@ -22,7 +33,7 @@ function Topbar({ username, handleLogout }) {
             <div className="right-section">
                 <FaQuestionCircle className="topbar-icon" />
                 <FaBell className="topbar-icon" />
-                <div className="user-profile">
+                <div className="user-profile" ref={dropdownRef}>
                     <div className="dropdown-wrapper" onClick={toggleDropdown}>
                         <span className="username">{username || 'Guest'}</span>
                         <span className="dropdown-arrow">▼</span>

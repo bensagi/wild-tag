@@ -1,18 +1,14 @@
-/* General User Management Page Styling */
 .user-management-page {
-    display: flex;
-    flex-direction: column;
-    width: calc(100% - 100px); /* Adjust width to account for the Sidebar */
-    margin-left: 100px; /* Align content after the Sidebar */
-    margin-top: 64px; /* Align content below the Topbar */
-    height: calc(100vh - 64px);
-    font-family: Arial, sans-serif;
+    width: 100%;
+    height: 100%;
+    padding: 24px 32px;
+    gap: 24px;
     background-color: #fff;
-    padding: 20px;
-    gap: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow-y: auto;
 }
 
-/* Title */
 .user-management-page h1 {
     font-size: 24px;
     font-weight: bold;
@@ -20,7 +16,12 @@
     margin-bottom: 16px;
 }
 
-/* Add Users Button */
+.add-users-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+}
+
 .add-users-btn {
     width: 140px;
     height: 40px;
@@ -30,14 +31,13 @@
     border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
-    align-self: flex-end;
+    transition: background-color 0.3s ease;
 }
 
 .add-users-btn:hover {
     background-color: #45a049;
 }
 
-/* Table Styling */
 .user-table {
     width: 100%;
     border-collapse: collapse;
@@ -51,6 +51,7 @@
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    font-size: 14px;
 }
 
 .user-table th {
@@ -74,6 +75,7 @@
     border-radius: 5px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     min-width: 150px;
+    animation: fadeIn 0.3s ease-in-out;
 }
 
 .dropdown-menu button {
@@ -83,13 +85,13 @@
     background: none;
     cursor: pointer;
     text-align: left;
+    font-size: 14px;
 }
 
 .dropdown-menu button:hover {
     background-color: #f5f5f5;
 }
 
-/* Modal Styling */
 .modal {
     position: fixed;
     top: 0;
@@ -100,7 +102,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 1050; /* High enough to appear above other elements */
 }
 
 .modal-content {
@@ -108,11 +110,55 @@
     padding: 20px;
     border-radius: 8px;
     width: 400px;
+    max-width: 90%;
     text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-.modal-content h2 {
-    font-size: 20px;
-    margin-bottom: 15px;
+
+textarea,
+select {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.cancel-btn {
+    background-color: #ccc;
+    color: #333;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background-color: #bbb;
+}
+
+.send-invite-btn {
+    background-color: #4CAF50;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.send-invite-btn:hover {
+    background-color: #45a049;
 }
