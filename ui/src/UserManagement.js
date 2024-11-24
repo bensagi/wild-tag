@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './UserManagement.css';
 import { FaEllipsisV } from 'react-icons/fa';
+import apiCall from './services/api'; // Import the API utility
 
 function UserManagement() {
     const [users, setUsers] = useState([]);
@@ -19,19 +20,9 @@ function UserManagement() {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch('http://localhost:8080/wild-tag/users', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                    },
+                const data = await apiCall('/wild-tag/users', 'GET', null, {
+                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
                 });
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch users.');
-                }
-
-                const data = await response.json();
                 setUsers(data);
             } catch (err) {
                 setError(err.message);
@@ -45,7 +36,6 @@ function UserManagement() {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            // Close dropdown and modals when clicking outside
             if (modalRef.current && !modalRef.current.contains(event.target)) {
                 setShowAddUsersModal(false);
                 setShowChangeRoleModal(false);
@@ -81,20 +71,9 @@ function UserManagement() {
         }));
 
         try {
-            const response = await fetch('http://localhost:8080/wild-tag/users/bulk', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                },
-                body: JSON.stringify(usersToCreate),
+            const createdUsers = await apiCall('/wild-tag/users/bulk', 'POST', usersToCreate, {
+                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to add users.');
-            }
-
-            const createdUsers = await response.json();
             setUsers((prevUsers) => [...prevUsers, ...createdUsers]);
             alert('Users added successfully!');
             setShowAddUsersModal(false);
@@ -106,23 +85,21 @@ function UserManagement() {
 
     const handleChangeRole = async () => {
         if (selectedUser && role) {
+            const updatedUserData = {
+                name: selectedUser.name,
+                email: selectedUser.email,
+                role, // New role value
+            };
+
             try {
-                const response = await fetch(`http://localhost:8080/wild-tag/users/${selectedUser.email}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                    },
-                    body: JSON.stringify({ ...selectedUser, role }),
+                const updatedUser = await apiCall(`/wild-tag/users/${selectedUser.email}`, 'PUT', updatedUserData, {
+                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
                 });
 
-                if (!response.ok) {
-                    throw new Error('Failed to update user role.');
-                }
-
-                const updatedUser = await response.json();
                 setUsers((prevUsers) =>
-                    prevUsers.map((user) => (user.email === selectedUser.email ? updatedUser : user))
+                    prevUsers.map((user) =>
+                        user.email === selectedUser.email ? updatedUser : user
+                    )
                 );
                 alert(`Role updated to ${role} for user: ${selectedUser.email}`);
                 setShowChangeRoleModal(false);
@@ -135,17 +112,9 @@ function UserManagement() {
     const handleDeleteUser = async () => {
         if (selectedUser) {
             try {
-                const response = await fetch(`http://localhost:8080/wild-tag/users/${selectedUser.email}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                    },
+                await apiCall(`/wild-tag/users/${selectedUser.email}`, 'DELETE', null, {
+                    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
                 });
-
-                if (!response.ok) {
-                    throw new Error('Failed to delete user.');
-                }
-
                 setUsers((prevUsers) => prevUsers.filter((user) => user.email !== selectedUser.email));
                 alert(`User with email ${selectedUser.email} has been deleted.`);
                 setShowDeleteUserModal(false);
