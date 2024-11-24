@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './UserManagement.css';
 import { FaEllipsisV } from 'react-icons/fa';
 
@@ -13,6 +13,8 @@ function UserManagement() {
     const [newUsers, setNewUsers] = useState("");
     const [role, setRole] = useState("USER");
     const [selectedUser, setSelectedUser] = useState(null);
+
+    const modalRef = useRef();
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -41,13 +43,38 @@ function UserManagement() {
         fetchUsers();
     }, []);
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            // Close dropdown and modals when clicking outside
+            if (modalRef.current && !modalRef.current.contains(event.target)) {
+                setShowAddUsersModal(false);
+                setShowChangeRoleModal(false);
+                setShowDeleteUserModal(false);
+                setVisibleDropdown(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     const toggleDropdown = (email) => {
         setVisibleDropdown((prev) => (prev === email ? null : email));
     };
 
     const handleAddUsers = async () => {
         const emails = newUsers.split(',').map((email) => email.trim());
-        const usersToCreate = emails.map((email) => ({
+        const validEmails = emails.filter((email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+
+        if (validEmails.length === 0) {
+            alert('Please enter valid email addresses.');
+            return;
+        }
+
+        const usersToCreate = validEmails.map((email) => ({
             name: email.split('@')[0],
             email,
             role,
@@ -139,9 +166,11 @@ function UserManagement() {
     return (
         <div className="user-management-page">
             <h1>Users Management</h1>
-            <button className="add-users-btn" onClick={() => setShowAddUsersModal(true)}>
-                Add Users
-            </button>
+            <div className="add-users-container">
+                <button className="add-users-btn" onClick={() => setShowAddUsersModal(true)}>
+                    Add Users
+                </button>
+            </div>
             <table className="user-table">
                 <thead>
                 <tr>
@@ -191,18 +220,15 @@ function UserManagement() {
                 </tbody>
             </table>
 
-            {/* Add Users Modal */}
             {showAddUsersModal && (
                 <div className="modal">
-                    <div className="modal-content">
+                    <div className="modal-content" ref={modalRef}>
                         <h2>Add New Users</h2>
-                        <p>Enter email addresses separated by commas:</p>
                         <textarea
-                            placeholder="username1@gmail.com, username2@gmail.com"
+                            placeholder="Enter valid emails, separated by commas"
                             value={newUsers}
                             onChange={(e) => setNewUsers(e.target.value)}
                         />
-                        <p>Select Role:</p>
                         <select value={role} onChange={(e) => setRole(e.target.value)}>
                             <option value="ADMIN">Admin</option>
                             <option value="USER">User</option>
@@ -219,12 +245,10 @@ function UserManagement() {
                 </div>
             )}
 
-            {/* Change Role Modal */}
             {showChangeRoleModal && (
                 <div className="modal">
-                    <div className="modal-content">
+                    <div className="modal-content" ref={modalRef}>
                         <h2>Change Role for {selectedUser?.email}</h2>
-                        <p>Select a new role:</p>
                         <select value={role} onChange={(e) => setRole(e.target.value)}>
                             <option value="ADMIN">Admin</option>
                             <option value="USER">User</option>
@@ -241,10 +265,9 @@ function UserManagement() {
                 </div>
             )}
 
-            {/* Delete User Modal */}
             {showDeleteUserModal && (
                 <div className="modal">
-                    <div className="modal-content">
+                    <div className="modal-content" ref={modalRef}>
                         <h2>Delete User</h2>
                         <p>Are you sure you want to delete the user with email {selectedUser?.email}?</p>
                         <div className="modal-actions">

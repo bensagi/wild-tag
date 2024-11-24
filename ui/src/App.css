@@ -20,7 +20,7 @@ body {
   flex-direction: column;
   width: 100%;
   height: 100vh;
-  overflow: visible; /* Ensure dropdown is not clipped */
+  overflow: visible; /* Ensure dropdowns and modals are not clipped */
 }
 
 .authenticated-layout {
@@ -31,7 +31,7 @@ body {
 .main-content {
   display: flex;
   width: 100%;
-  height: calc(100vh - 60px); /* Account for Topbar height */
+  height: calc(100vh - 64px); /* Adjusted for consistent Topbar height */
 }
 
 .page-content {
@@ -39,4 +39,8 @@ body {
   background-color: #fafafa;
   padding: 20px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Align content at the top */
+  align-items: flex-start; /* Align content to the left */
 }
