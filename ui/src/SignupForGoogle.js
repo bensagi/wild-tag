@@ -2,6 +2,7 @@ import React from 'react';
 import './SignupForGoogle.css';
 import { GoogleLogin } from '@react-oauth/google';
 import ImageSlider from './ImageSlider';
+import apiCall from './services/api'; // Import the API utility
 
 const images = [
     { url: '/image_1.png', alt: 'Image 1' },
@@ -13,26 +14,11 @@ function SignupForGoogle({ onLoginSuccess }) {
     const handleLoginSuccess = async (credentialResponse) => {
         const jwtToken = credentialResponse.credential;
 
-        // Save the JWT and send it to the server for validation
         try {
-            const response = await fetch('http://localhost:8080/wild-tag/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwtToken}`,
-                },
-                body: JSON.stringify({}),
+            const data = await apiCall('/wild-tag/login', 'POST', {}, {
+                Authorization: `Bearer ${jwtToken}`,
             });
-
-            if (response.ok) {
-                const data = await response.json(); // Get the user data from the response
-                console.log('Server Response:', data);
-
-                // Notify parent component with the token and user data
-                onLoginSuccess(jwtToken, data);
-            } else {
-                console.error('Failed to log in to server:', response.statusText);
-            }
+            onLoginSuccess(jwtToken, data);
         } catch (error) {
             console.error('Error logging in to server:', error);
         }
