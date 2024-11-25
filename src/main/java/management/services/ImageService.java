@@ -6,12 +6,12 @@ import com.wild_tag.model.CoordinatesApi;
 import com.wild_tag.model.ImageApi;
 import com.wild_tag.model.ImageStatusApi;
 import com.wild_tag.model.ImagesBucketApi;
-import jakarta.transaction.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,7 +21,6 @@ import management.entities.images.ImageStatus;
 import management.entities.users.UserDB;
 import management.repositories.ImagesRepository;
 import management.repositories.UserRepository;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,18 +47,30 @@ public class ImageService {
   @Value("${validate_rate:15}")
   private Integer validateRate;
 
-  private Map<String, Integer> categoriesHistogram;
+  private final Map<String, Integer> categoriesHistogram = new HashMap<>();
 
-  private CloudStorageService cloudStorageService;
+  private final CloudStorageService cloudStorageService;
 
-  private ImagesRepository imagesRepository;
+  private final ImagesRepository imagesRepository;
 
-  private UserRepository usersRepository;
+  private final UserRepository usersRepository;
 
   public ImageService(CloudStorageService cloudStorageService, ImagesRepository imagesRepository, UserRepository usersRepository) {
     this.cloudStorageService = cloudStorageService;
     this.imagesRepository = imagesRepository;
     this.usersRepository = usersRepository;
+  }
+
+  public void setDataSetBucket(String dataSetBucket) {
+    this.dataSetBucket = dataSetBucket;
+  }
+
+  public void setStorageRootDir(String storageRootDir) {
+    this.storageRootDir = storageRootDir;
+  }
+
+  public void setValidateRate(Integer validateRate) {
+    this.validateRate = validateRate;
   }
 
   public void loadImages(ImagesBucketApi imagesBucketApi) {
@@ -128,7 +139,6 @@ public class ImageService {
     return imagesRepository.getByStatus(ImageStatus.VALIDATED, PageRequest.of(0, limit));
   }
 
-  @Transactional
   public void buildImageTag(ImageDB imageDB) throws IOException {
     String yoloImagePath = createYoloFiles(imageDB);
     imageDB.setGcsTaggedPath(yoloImagePath);
@@ -136,29 +146,33 @@ public class ImageService {
     imagesRepository.save(imageDB);
   }
 
-  public String createYoloFiles(ImageDB imageDB) throws IOException {
+  private String createYoloFiles(ImageDB imageDB) throws IOException {
     List<CoordinateDB> coordinates = imageDB.getCoordinates(); // Assuming a getter for coordinates exists
 
-    // Create a byte array output stream to temporarily hold the file content
+    boolean isValidate = isValidate(coordinates);
+    String[] parts = imageDB.getGcsFullPath().split("/");
+    String objectName = parts[parts.length - 1];
+
+    uploadYoloText(imageDB, coordinates, isValidate, objectName);
+
+    return moveImageToDataSetPath(isValidate, imageDB.getGcsFullPath(), objectName);
+  }
+
+  private void uploadYoloText(ImageDB imageDB, List<CoordinateDB> coordinates, boolean isValidate, String objectName)
+      throws IOException {
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         Writer writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
 
       byte[] yoloTextByteArray = getYoloText(coordinates, writer, outputStream);
 
-      boolean isValidate = isValidate(imageDB);
-
-      String[] parts = imageDB.getGcsFullPath().split("/");
-      String objectName = parts[parts.length - 1];
-
       uploadTextFile(isValidate, convertToTxtFileName(objectName), yoloTextByteArray);
-      return moveImageToDataSetPath(isValidate, imageDB.getGcsFullPath(), objectName);
     } catch (IOException e) {
       logger.error("failed to create yolo files for image {}", imageDB.getId(), e);
       throw e;
     }
   }
 
-  public static String convertToTxtFileName(String imageFileName) {
+  private static String convertToTxtFileName(String imageFileName) {
 
     int dotIndex = imageFileName.lastIndexOf('.');
     if (dotIndex == -1) {
@@ -169,24 +183,23 @@ public class ImageService {
   }
 
 
-  private String uploadTextFile(boolean isValidate, String objectName, byte[] yoloTextByteArray) {
+  private void uploadTextFile(boolean isValidate, String objectName, byte[] yoloTextByteArray) {
     String folder = String.format("%s/%s/%s/%s", storageRootDir, DATASET, LABELS, isValidate ? VAL : TRAIN);
-    return cloudStorageService.uploadFileToStorage(dataSetBucket, folder, objectName, yoloTextByteArray);
+    cloudStorageService.uploadFileToStorage(dataSetBucket, folder, objectName, yoloTextByteArray);
   }
 
   private String moveImageToDataSetPath(boolean isValidate, String gcsFullPath, String objectName) {
 
     String destinationObject = String.format("%s/%s/%s/%s/%s", storageRootDir, DATASET, IMAGES, isValidate ? VAL : TRAIN, objectName);
-    cloudStorageService.copyObject(gcsFullPath, dataSetBucket, destinationObject);
-    String copiedImageUri = String.format("gs://%s/%s", dataSetBucket, destinationObject);
+    String copiedImageUri = cloudStorageService.copyObject(gcsFullPath, dataSetBucket, destinationObject);
     cloudStorageService.deleteObject(gcsFullPath);
     return copiedImageUri;
   }
 
-  private boolean isValidate(ImageDB imageDB) {
+  private boolean isValidate(List<CoordinateDB> coordinates) {
     boolean isValidate = false;
 
-    for (CoordinateDB coordinateDB : imageDB.getCoordinates()) {
+    for (CoordinateDB coordinateDB : coordinates) {
       String category = coordinateDB.getAnimalId();
       int categoryObjects = categoriesHistogram.get(category) != null ? categoriesHistogram.get(category) : 0;
       categoriesHistogram.put(category, ++categoryObjects);
@@ -198,7 +211,6 @@ public class ImageService {
     return isValidate;
   }
 
-  @NotNull
   private static byte[] getYoloText(List<CoordinateDB> coordinates, Writer writer, ByteArrayOutputStream outputStream)
       throws IOException {
     for (CoordinateDB coord : coordinates) {

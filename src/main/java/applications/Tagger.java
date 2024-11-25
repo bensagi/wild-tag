@@ -35,8 +35,11 @@ public class Tagger implements CommandLineRunner {
   @Override
   public void run(String... args) throws Exception {
 
+    int handled = 0;
+
     while (true) {
       List<ImageDB> images = imageService.getValidatedImages(limit);
+      logger.debug("found {} images to build tag", images.size());
       if (images.isEmpty()) {
         return;
       }
@@ -44,11 +47,14 @@ public class Tagger implements CommandLineRunner {
       for (ImageDB image : images) {
         try {
           imageService.buildImageTag(image);
+          logger.debug("image {} handled", image.getId());
+          handled++;
         }
         catch (Exception e) {
           logger.error("failed to tag image {}", image.getId(), e);
         }
       }
+      logger.info("handled {} images", images);
     }
   }
 }

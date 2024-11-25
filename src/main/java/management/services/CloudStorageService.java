@@ -73,16 +73,14 @@ public class CloudStorageService {
     return BlobId.of(sourceUriParts[0], sourceUriParts[1]);
   }
 
-  public boolean deleteObject(String objectUri) {
+  public void deleteObject(String objectUri) {
     BlobId blobId = getGetBlobId(objectUri);
 
     boolean deleted = storageClient.delete(blobId);
     if (deleted) {
       logger.debug("deleted: {}", objectUri);
-      return true;
     } else {
       logger.error("Failed to delete the source object: {}", objectUri, new Exception());
-      return false;
     }
   }
 
