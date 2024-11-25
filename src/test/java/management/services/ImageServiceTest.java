@@ -69,4 +69,36 @@ class ImageServiceTest {
     assertEquals(ImageStatus.TRAINABLE, savedImage.getStatus());
     assertEquals(String.format("GS://%s/%s", DATA_SET_BUCKET, "ROOT/dataset/images/train/yahmor.png"), savedImage.getGcsTaggedPath());
   }
+
+  @Test
+  void testBuildImageTag_validate() throws IOException {
+
+    UserDB tagger = new UserDB();
+    UserDB validator = new UserDB();
+    List<CoordinateDB> coordinates = new ArrayList<>();
+    coordinates.add(new CoordinateDB("1", 0.5, 0.5, 0.3, 0.2));
+    coordinates.add(new CoordinateDB("1", 0.1, 0.5, 0.3, 0.2));
+
+    ImageDB imageDb = new ImageDB("gs://bucket/path/to/yahmor.png", ImageStatus.TAGGED, tagger, validator, coordinates, null);
+
+    Mockito.when(cloudStorageService.copyObject(eq(imageDb.getGcsFullPath()), eq(DATA_SET_BUCKET), eq("root/dataset/images/val/yahmor.png"))).thenReturn("GS://dataSetBucket/ROOT/dataset/images/val/yahmor.png");
+
+    imageService.buildImageTag(imageDb);
+
+    ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
+
+    Mockito.verify(cloudStorageService, times(1)).uploadFileToStorage(
+        eq(DATA_SET_BUCKET), eq("root/dataset/labels/val"), eq("yahmor.txt"),
+        captor.capture()
+    );
+    assertTrue(captor.getValue().length > 10);
+    Mockito.verify(cloudStorageService).copyObject(imageDb.getGcsFullPath(), DATA_SET_BUCKET, "root/dataset/images/val/yahmor.png");
+    Mockito.verify(cloudStorageService, times(1)).deleteObject(imageDb.getGcsFullPath());
+    ArgumentCaptor<ImageDB> imageCaptor = ArgumentCaptor.forClass(ImageDB.class);
+    Mockito.verify(imagesRepository, times(1)).save(imageCaptor.capture());
+    ImageDB savedImage = imageCaptor.getValue();
+
+    assertEquals(ImageStatus.TRAINABLE, savedImage.getStatus());
+    assertEquals(String.format("GS://%s/%s", DATA_SET_BUCKET, "ROOT/dataset/images/val/yahmor.png"), savedImage.getGcsTaggedPath());
+  }
 }

@@ -203,7 +203,8 @@ public class ImageService {
       String category = coordinateDB.getAnimalId();
       int categoryObjects = categoriesHistogram.get(category) != null ? categoriesHistogram.get(category) : 0;
       categoriesHistogram.put(category, ++categoryObjects);
-      if (categoryObjects % validateRate == 0) {
+      int modulusValue = (int) Math.round(100.0 / validateRate);
+      if (categoryObjects % modulusValue == 0) {
         isValidate = true;
       }
     }
