@@ -6,9 +6,10 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:808
  * @param {string} method - HTTP method ('GET', 'POST', 'PUT', 'DELETE').
  * @param {object|null} body - Request body for POST/PUT requests.
  * @param {object} headers - Additional headers.
+ * @param responseType
  * @returns {Promise<any>} - Resolves with response data or rejects with an error.
  */
-async function apiCall(endpoint, method = "GET", body = null, headers = {}) {
+async function apiCall(endpoint, method = "GET", body = null, headers = {}, responseType = "json") {
     const url = `${API_BASE_URL}${endpoint}`;
     const options = {
         method,
@@ -29,6 +30,9 @@ async function apiCall(endpoint, method = "GET", body = null, headers = {}) {
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Error ${response.status}: ${errorText}`);
+        }
+        if(responseType === "text") {
+            return await response.text();
         }
         return await response.json();
     } catch (error) {

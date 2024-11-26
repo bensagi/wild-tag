@@ -42,7 +42,6 @@ function App() {
   const resetIdleTimeout = () => {
     if (idleTimeout) clearTimeout(idleTimeout);
     const timeout = setTimeout(() => {
-      alert('Session expired due to inactivity.');
       handleLogout();
     }, INACTIVITY_LIMIT);
     setIdleTimeout(timeout);
