@@ -4,6 +4,7 @@ import './Dashboard.css';
 import Topbar from './Topbar';
 import Sidebar from './Sidebar';
 import UserManagement from './UserManagement';
+import Categories from "./Categories";
 
 function Dashboard({ username, handleLogout }) {
     return (
@@ -15,6 +16,7 @@ function Dashboard({ username, handleLogout }) {
                     <Routes>
                         <Route path="/" element={<div>Welcome to the Home Page</div>} />
                         <Route path="/settings" element={<UserManagement />} />
+                        <Route path="/categories" element={<Categories />} />
                     </Routes>
                 </div>
             </div>

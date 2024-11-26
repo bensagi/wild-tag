@@ -29,6 +29,13 @@ function Sidebar() {
                 <FaCog className="sidebar-icon" />
                 <span>Settings</span>
             </NavLink>
+            <NavLink
+                to="/categories"
+                className={`sidebar-item ${location.pathname === '/categories' ? 'active' : ''}`}
+            >
+                <FaCog className="sidebar-icon" />
+                <span>Categories</span>
+            </NavLink>
         </div>
     );
 }

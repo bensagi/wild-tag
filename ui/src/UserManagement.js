@@ -133,9 +133,9 @@ function UserManagement() {
     }
 
     return (
-        <div className="user-management-page">
+        <div className="management-page">
             <h1>Users Management</h1>
-            <div className="add-users-container">
+            <div className="add-entity-container">
                 <button className="add-users-btn" onClick={() => setShowAddUsersModal(true)}>
                     Add Users
                 </button>

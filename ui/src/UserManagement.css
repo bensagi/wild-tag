@@ -1,4 +1,4 @@
-.user-management-page {
+.management-page {
     width: 100%;
     height: 100%;
     padding: 24px 32px;
@@ -9,14 +9,14 @@
     overflow-y: auto;
 }
 
-.user-management-page h1 {
+.management-page h1 {
     font-size: 24px;
     font-weight: bold;
     color: #333;
     margin-bottom: 16px;
 }
 
-.add-users-container {
+.add-entity-container {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 16px;
