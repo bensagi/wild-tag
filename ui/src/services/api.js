@@ -27,14 +27,23 @@ async function apiCall(endpoint, method = "GET", body = null, headers = {}, resp
 
     try {
         const response = await fetch(url, options);
+        console.log('Response status:', response.status);
+        const rawText = await response.text();
+        console.log('Raw response text:', rawText);
+
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Error ${response.status}: ${errorText}`);
+            throw new Error(`Error ${response.status}: ${rawText}`);
         }
-        if(responseType === "text") {
-            return await response.text();
+
+        if (rawText.trim() === "" || response.status === 204) {
+            return null; // Handle empty responses
         }
-        return await response.json();
+
+        if (responseType === "text") {
+            return rawText;
+        }
+
+        return JSON.parse(rawText); // Avoid `response.json()` for debugging
     } catch (error) {
         console.error(`API call to ${url} failed:`, error);
         throw error;
