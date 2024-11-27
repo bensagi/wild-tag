@@ -78,7 +78,7 @@ function App() {
       <Router>
         <div className="app-container">
           {isLoggedIn ? (
-              <Dashboard username={username} handleLogout={handleLogout} />
+              <Dashboard username={username} role={role} handleLogout={handleLogout} />
           ) : (
               <SignupForGoogle onLoginSuccess={handleLoginSuccess} />
           )}

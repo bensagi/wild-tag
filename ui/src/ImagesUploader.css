@@ -1,0 +1,89 @@
+/* Container for the uploader */
+.bucket-uploader-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 50px auto; /* Center the component */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Spacing between the text area, button, and messages */
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    font-family: Arial, sans-serif;
+}
+
+/* Text area for entering bucket link */
+.bucket-textarea {
+    width: 100%;
+    height: 100px;
+    padding: 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    resize: none; /* Prevent resizing */
+    outline: none; /* Remove outline on focus */
+    background-color: #f9f9f9;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.bucket-textarea:focus {
+    border-color: #00b894; /* Highlight border on focus */
+}
+
+/* Submit button styling */
+.bucket-submit-button {
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #00b894;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.bucket-submit-button:hover {
+    background-color: #019874; /* Darker green on hover */
+}
+
+/* Message styling */
+.bucket-message {
+    padding: 12px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.bucket-message.success {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+
+.bucket-message.error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .bucket-uploader-container {
+        width: 90%; /* Adjust width for smaller screens */
+        padding: 16px;
+    }
+
+    .bucket-textarea {
+        height: 80px; /* Reduce height for smaller screens */
+    }
+
+    .bucket-submit-button {
+        font-size: 14px; /* Adjust button text size */
+    }
+}
