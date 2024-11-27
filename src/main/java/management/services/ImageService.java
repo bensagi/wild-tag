@@ -2,6 +2,8 @@ package management.services;
 
 import static management.entities.images.ImageStatus.VALIDATED;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wild_tag.model.CoordinatesApi;
 import com.wild_tag.model.ImageApi;
 import com.wild_tag.model.ImageStatusApi;
@@ -55,10 +57,20 @@ public class ImageService {
 
   private final UserRepository usersRepository;
 
-  public ImageService(CloudStorageService cloudStorageService, ImagesRepository imagesRepository, UserRepository usersRepository) {
+  private NATSPublisher natsPublisher;
+
+  private ObjectMapper objectMapper;
+
+  @Value("${job.nats.imageProcessingTopic}")
+  private String topic;
+
+  public ImageService(CloudStorageService cloudStorageService, ImagesRepository imagesRepository,
+      UserRepository usersRepository, NATSPublisher natsPublisher) {
     this.cloudStorageService = cloudStorageService;
     this.imagesRepository = imagesRepository;
     this.usersRepository = usersRepository;
+    this.natsPublisher = natsPublisher;
+    this.objectMapper = new ObjectMapper();
   }
 
   public void setDataSetBucket(String dataSetBucket) {
@@ -73,9 +85,8 @@ public class ImageService {
     this.validateRate = validateRate;
   }
 
-  public void loadImages(ImagesBucketApi imagesBucketApi) {
-    Thread thread = new Thread(() -> loadImagesBackground(imagesBucketApi));
-    thread.start();
+  public void loadImages(ImagesBucketApi imagesBucketApi) throws JsonProcessingException {
+    natsPublisher.sendMessage(topic, objectMapper.writeValueAsString(imagesBucketApi));
   }
 
   public void loadImagesBackground(ImagesBucketApi imagesBucketApi) {
