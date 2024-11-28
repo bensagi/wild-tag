@@ -714,7 +714,8 @@ serverBlock: |-
       index index.html;
   
       set $backend http://api-wild-server.{{.Release.Namespace}}.svc.cluster.local:8080;
-  
+      set $methods 'GET, POST, PUT, DELETE, OPTIONS';
+      add_header Access-Control-Allow-Methods $methods always;
           
       location /health {
         return 200 'OK';
@@ -730,8 +731,7 @@ serverBlock: |-
         proxy_set_header Host            $http_host;
         proxy_set_header Authorization $http_authorization;
   
-        set $methods 'GET, POST, PUT, DELETE, OPTIONS';
-        proxy_set_header Access-Control-Allow-Methods $methods always;
+        proxy_set_header Access-Control-Allow-Methods $methods;
         client_max_body_size 128M;
   
       }
