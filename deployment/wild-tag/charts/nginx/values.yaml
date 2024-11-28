@@ -739,7 +739,7 @@ serverBlock: |-
         add_header Access-Control-Allow-Methods $methods always;
 
         proxy_pass $backend;
-        resolver 34.118.224.10 valid=10s;
+        resolver kube-dns.kube-system.svc.cluster.local valid=10s;
   
         proxy_set_header Host            $http_host;
         proxy_set_header Authorization $http_authorization;
