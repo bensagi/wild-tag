@@ -7,14 +7,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import management.services.CategoriesService;
-import management.services.CloudStorageService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,9 +35,6 @@ public class CategoriesControllerTest extends NATSTestSimulator {
 
   @Autowired
   private CategoriesService categoriesService; // Assuming this is a Spring-managed bean
-
-  @MockBean
-  private CloudStorageService dependencyServiceMock;
 
   ObjectMapper objectMapper = new ObjectMapper();
 

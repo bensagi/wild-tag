@@ -10,11 +10,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import management.entities.users.UserDB;
 import management.enums.UserRole;
 import management.repositories.ImagesRepository;
-import management.services.CloudStorageService;
 import management.services.ImageService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -44,9 +41,6 @@ public class ImagesControllerTest extends NATSTestSimulator {
   private WebApplicationContext webApplicationContext;
 
   private MockMvc mockMvc;
-
-  @MockBean
-  private CloudStorageService dependencyServiceMock;
 
   @Autowired
   private ImageService imageService;
