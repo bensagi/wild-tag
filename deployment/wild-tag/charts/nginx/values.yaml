@@ -733,13 +733,13 @@ serverBlock: |-
           add_header 'Content-Length' 0;
           add_header 'Content-Type' 'text/plain charset=UTF-8';
           return 204;
-          }
-          # Handle actual requests
-          add_header 'Access-Control-Allow-Origin' '*' always;
-          add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
-          add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, Accept' always;
         }
-  
+        # Handle actual requests
+        add_header 'Access-Control-Allow-Origin' '*' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, Accept' always;
+        }
+        proxy_pass $backend;
         resolver kube-dns.kube-system.svc.cluster.local ipv6=off valid=10s;
   
         proxy_set_header Host            $http_host;
@@ -747,7 +747,7 @@ serverBlock: |-
   
         proxy_set_header Access-Control-Allow-Methods $methods;
         client_max_body_size 128M;
-        proxy_pass $backend;      
+  
       }
       # Optional: Additional security headers
       add_header X-Content-Type-Options nosniff;
