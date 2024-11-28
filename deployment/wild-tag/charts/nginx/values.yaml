@@ -738,7 +738,7 @@ serverBlock: |-
         add_header 'Access-Control-Allow-Origin' '*' always;
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
         add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, Accept' always;
-        }
+
         proxy_pass $backend;
         resolver kube-dns.kube-system.svc.cluster.local ipv6=off valid=10s;
   
@@ -746,8 +746,7 @@ serverBlock: |-
         proxy_set_header Authorization $http_authorization;
   
         proxy_set_header Access-Control-Allow-Methods $methods;
-        client_max_body_size 128M;
-  
+        client_max_body_size 128M; 
       }
       # Optional: Additional security headers
       add_header X-Content-Type-Options nosniff;
