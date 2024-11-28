@@ -40,7 +40,7 @@ public class GoogleIdTokenAuthenticationFilter extends GenericFilterBean {
   public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws ServletException, IOException {
     HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
     String idTokenString = httpServletRequest.getHeader("Authorization");
-
+    logger.info("idTokenString: " + idTokenString);
     if (Strings.isNullOrEmpty(idTokenString)) {
       filterChain.doFilter(servletRequest, servletResponse);
       return;
@@ -61,7 +61,7 @@ public class GoogleIdTokenAuthenticationFilter extends GenericFilterBean {
     } catch (GeneralSecurityException e) {
       throw new RuntimeException(e);
     }
-
+    logger.info("idToken: " + idToken);
     if(idToken == null) {
       filterChain.doFilter(servletRequest, servletResponse);
       return;
