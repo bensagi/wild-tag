@@ -36,7 +36,7 @@ import com.wild_tag.model.CoordinatesApi;
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @Sql(scripts = "/setup-test-images-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-public class ImagesControllerTest {
+public class ImagesControllerTest extends NATSTestSimulator {
 
   @Autowired
   private WebApplicationContext webApplicationContext;

@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.*;
 
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-public class CategoriesControllerTest {
+public class CategoriesControllerTest extends NATSTestSimulator {
 
   private MockMvc mockMvc;
 

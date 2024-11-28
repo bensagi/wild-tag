@@ -32,7 +32,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-public class UsersControllerTest {
+public class UsersControllerTest extends NATSTestSimulator {
 
   @Autowired
   private UsersController usersController;
