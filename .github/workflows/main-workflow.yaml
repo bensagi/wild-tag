@@ -1,0 +1,42 @@
+name: TW#!
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+    inputs:
+      env-name:
+        description: "name of the main namespace"
+        type: string
+        required: true
+      installation-type:
+        description: 'are we upgrading or starting fresh?'
+        type: choice
+        options:
+          - fresh-install
+          - upgrade
+        required: true
+
+
+env:
+  WILDTAG_NAMESPACE: ${{ vars.WILDTAG_NAMESPACE }}
+
+jobs:
+
+  build-and-push:
+    uses: ./.github/workflows/ci.yaml
+    secrets:
+      GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+  deploy:
+    uses: ./.github/workflows/cd.yaml
+    needs: build-and-push
+    with:
+      env-name: ${{ github.event_name == 'push' && vars.WILDTAG_NAMESPACE || inputs.env-name }}
+      installation-type: ${{ github.event_name == 'push' && 'upgrade' || inputs.installation-type }}
+    secrets:
+      GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+      PRIVKEY: ${{ secrets.PRIVKEY }}
+      FULL_CHAIN: ${{ secrets.FULL_CHAIN }}

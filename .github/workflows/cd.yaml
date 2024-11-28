@@ -1,0 +1,126 @@
+name: Deploy server
+
+on:
+  workflow_call:
+    inputs:
+      installation-type:
+        description: 'are we upgrading or starting fresh?'
+        type: string
+        default: 'fresh-install'
+      env-name:
+        description: "name of the main namespace"
+        type: string
+        required: true
+        default: 'wild-tag'
+    secrets:
+      GCP_SERVICE_ACCOUNT_KEY:
+        description: 'GCP Service Account Key'
+        required: true
+      PRIVKEY:
+        description: 'tls private key'
+        required: true
+      FULL_CHAIN:
+        description: 'tls full chain'
+        required: true
+
+  workflow_dispatch:
+    inputs:
+      installation-type:
+        description: 'are we upgrading or starting fresh?'
+        type: choice
+        options:
+          - fresh-install
+          - upgrade
+        default: fresh-install
+      env-name:
+        description: "name for your env. no spaces and no spacial characters. And keep it short."
+        type: string
+        required: true
+
+jobs:
+  full-deployment:
+    runs-on: ubuntu-latest
+    env:
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      WILDTAG_CLUSTER: ${{ vars.WILDTAG_CLUSTER }}
+      WILDTAG_CLUSTER_ZONE: ${{ vars.WILDTAG_CLUSTER_ZONE }}
+      ZONE_NAME: ${{ vars.ZONE_NAME }}
+      RECORD_SUFFIX: ${{ vars.RECORD_SUFFIX }}
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Get Cluster Creds
+        id: 'get-creds'
+        uses: 'google-github-actions/get-gke-credentials@v2'
+        with:
+          cluster_name: ${{ env.WILDTAG_CLUSTER }}
+          location: ${{ env.WILDTAG_CLUSTER_ZONE }}
+
+      - name: Discover SHA
+        id: gitSha
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Create Docker registry secret
+        run: |
+          if kubectl get secret regcred --namespace=${{ inputs.env-name }} >/dev/null 2>&1; then 
+            kubectl delete secret regcred --namespace=${{ inputs.env-name }}
+          else
+            echo "secret doesn't exists - creating it"
+          fi
+          
+          kubectl create secret docker-registry regcred \
+          --docker-server='me-west1-docker.pkg.dev' \
+          --docker-username=_json_key \
+          --docker-password='${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'  \
+          --namespace=${{ inputs.env-name }}
+
+      - name: Create tls secret
+        run: |
+          
+          echo "${{ secrets.FULL_CHAIN }}" > cert.pem
+          echo "${{ secrets.PRIVKEY }}" > privkey.pem
+          
+          if kubectl get secret nginx-cert-secret --namespace=${{ inputs.env-name }} >/dev/null 2>&1; then 
+            kubectl delete secret nginx-cert-secret --namespace=${{ inputs.env-name }}
+          else
+            echo "secret doesn't exists - creating it"
+          fi
+          
+          kubectl create secret tls nginx-cert-secret \
+              --cert=cert.pem \
+              --key=privkey.pem \
+              --namespace=${{ inputs.env-name }}
+          
+
+      - name: Clean Env
+        if: ${{ inputs.installation-type == 'fresh-install' }}
+        run: ${GITHUB_WORKSPACE}/deployment/scripts/clean_env.sh ${{ inputs.env-name }} ${{ env.ZONE_NAME }} ${{ env.RECORD_SUFFIX }}
+
+      - name: Install Env
+        run:
+          ${GITHUB_WORKSPACE}/deployment/scripts/deploy_env.sh ${{ inputs.env-name }} ${{ steps.gitSha.outputs.sha_short }} ${{ inputs.installation-type }}
+
+      - name: Wait for availability
+        run:
+          ${GITHUB_WORKSPACE}/deployment/scripts/wait_for_availability.sh ${{ inputs.env-name }}
+
+      - name: discover IP
+        id: serviceIP
+        run: |
+          echo "ip=$(${GITHUB_WORKSPACE}/deployment/scripts/discover_ip.sh ${{ inputs.env-name }})" >> $GITHUB_OUTPUT
+
+      - name: change DNS record
+        if: ${{ inputs.installation-type == 'fresh-install' }}
+        run: |
+          gcloud dns record-sets create ${{ inputs.env-name }}${{ env.RECORD_SUFFIX }} --rrdatas=${{ steps.serviceIP.outputs.ip }} --type=A --ttl=60 --zone=${{ env.ZONE_NAME }}
+          
+          

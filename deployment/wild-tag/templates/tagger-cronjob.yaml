@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: wild-tagger
+  labels:
+    app: wild-tagger
+
+spec:
+  schedule: "0 */12 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: wild-tagger
+
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: wild-tagger
+              image: "me-west1-docker.pkg.dev/gcp-etigcp-nprd-12855/wild-tag/server:{{ .Values.core.imageTag }}"
+              ports:
+                - containerPort: 8080
+              command:
+              - "java"
+              - "-Xmx512m"
+              - "-jar"
+              - "wild-tag-latest.jar"
+              - "applications.Tagger"
+              envFrom:
+                - configMapRef:
+                    name: wild-config
+              env:
+                - name: tagger.batchSize
+                  value: "100"
+                - name: validate_rate
+                  value: "15"
+                - name: data_set_bucket
+                  value: wild-tag-data-set
+                - name: storage_root_dir
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+              resources:
+                limits:
+                  memory: "512Mi"
+                  cpu: "500m"
+                requests:
+                  memory: "512Mi"
+                  cpu: "250m"
+              imagePullPolicy: IfNotPresent
+
+          imagePullSecrets:
+            - name: regcred
