@@ -720,14 +720,15 @@ serverBlock: |-
         return 200 'OK';
         add_header Content-Type text/plain;
       }
-  
+    
       location /api/ {
 
         rewrite /api/(.*) /$1 break;
         proxy_pass $backend;
-        resolver 34.118.224.10 valid=30s;
+        resolver kube-dns.kube-system.svc.cluster.local ipv6=off valid=10s;
   
         proxy_set_header Host            $http_host;
+        proxy_set_header Authorization $http_authorization;
         client_max_body_size 128M;
   
       }
