@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import management.entities.users.UserDB;
 import management.enums.UserRole;
 import management.repositories.ImagesRepository;
@@ -36,7 +35,7 @@ import com.wild_tag.model.CoordinatesApi;
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @Sql(scripts = "/setup-test-images-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-public class ImagesControllerTest {
+public class ImagesControllerTest extends NATSTestSimulator {
 
   @Autowired
   private WebApplicationContext webApplicationContext;

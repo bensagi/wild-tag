@@ -3,6 +3,7 @@ package management.repositories;
 import applications.Application;
 import java.util.Collections;
 import java.util.Optional;
+import management.controllers.NATSTestSimulator;
 import management.entities.images.CoordinateDB;
 import management.entities.images.ImageDB;
 import management.entities.images.ImageStatus;
@@ -14,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest(classes = Application.class)
-public class ImageRepositoryTest {
+public class ImageRepositoryTest extends NATSTestSimulator {
 
   @Autowired
   UserRepository userRepository;

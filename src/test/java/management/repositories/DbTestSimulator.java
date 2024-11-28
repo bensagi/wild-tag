@@ -1,5 +1,6 @@
 package management.repositories;
 
+import management.controllers.NATSTestSimulator;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -7,7 +8,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 
-public class DbTestSimulator {
+public class DbTestSimulator extends NATSTestSimulator {
 
   static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:15")
       .withDatabaseName("test")
@@ -22,13 +23,15 @@ public class DbTestSimulator {
   }
 
   @BeforeAll
-  static void startContainer() {
+  public static void startContainer() {
+    NATSTestSimulator.startContainer();
     postgreSQLContainer.start();
   }
 
 
   @AfterAll
-  static void stopContainer() {
+  public static void stopContainer() {
+    NATSTestSimulator.stopContainer();
     postgreSQLContainer.stop();
   }
 }
