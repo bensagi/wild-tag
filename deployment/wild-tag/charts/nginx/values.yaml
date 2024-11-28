@@ -736,6 +736,7 @@ serverBlock: |-
         # Handle actual requests
         add_header 'Access-Control-Allow-Origin' '*' always;
         add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, Accept' always;
+        add_header Access-Control-Allow-Methods $methods always;
 
         proxy_pass $backend;
         resolver 34.118.224.10 valid=10s;
