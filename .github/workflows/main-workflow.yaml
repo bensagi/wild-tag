@@ -1,4 +1,4 @@
-name: TW#!
+name: full pipeline
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       env-name:
-        description: "name of the main namespace"
+        description: "name for your env. no spaces and no spacial characters. And keep it short."
         type: string
         required: true
       installation-type:
@@ -29,6 +29,8 @@ jobs:
     uses: ./.github/workflows/ci.yaml
     secrets:
       GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+    with:
+      env-name: ${{ github.event_name == 'push' && vars.WILDTAG_NAMESPACE || inputs.env-name }}
 
   deploy:
     uses: ./.github/workflows/cd.yaml
