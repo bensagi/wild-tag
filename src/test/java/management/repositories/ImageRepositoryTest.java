@@ -17,8 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 
 @SpringBootTest(classes = Application.class)
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public class ImageRepositoryTest extends DbTestSimulator {
 
   @Autowired
