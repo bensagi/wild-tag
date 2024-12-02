@@ -30,6 +30,9 @@ public class SecurityConfig {
   @Value("${google.api.key}")
   private String googleClientId;
 
+  @Value("${serverUrl:wild-tag.portshift.co}")
+  String serverUrl;
+
   @Bean
   @Order(2)
   @Autowired
@@ -52,7 +55,7 @@ public class SecurityConfig {
       @Override
       public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOrigins("http://localhost:3000")
+            .allowedOrigins("http://localhost:3000","https://"+serverUrl)
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(true);

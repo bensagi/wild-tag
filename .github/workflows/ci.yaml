@@ -1,4 +1,4 @@
-name: build and push images
+name: CI
 
 on:
   workflow_call:
@@ -6,6 +6,12 @@ on:
       GCP_SERVICE_ACCOUNT_KEY:
         description: 'GCP Service Account Key'
         required: true
+    inputs:
+      env-name:
+        description: "name for your env. no spaces and no spacial characters. And keep it short."
+        type: string
+        required: true
+        default: 'wild-tag'
 
 jobs:
   build-server-and-push:
@@ -41,6 +47,9 @@ jobs:
   build-ui-and-push:
     runs-on: ubuntu-latest
 
+    env:
+      RECORD_SUFFIX: ${{ vars.RECORD_SUFFIX }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -58,6 +67,10 @@ jobs:
       - name: discover SHA
         id: gitSha
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Add url to env
+        id: urlEnv
+        run: echo "REACT_APP_API_BASE_URL=https://${{ inputs.env-name }}${{ env.RECORD_SUFFIX}}/api" > ${{ github.workspace }}/ui/.env
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
