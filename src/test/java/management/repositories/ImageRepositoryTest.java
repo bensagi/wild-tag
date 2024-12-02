@@ -11,7 +11,6 @@ import management.entities.images.ImageDB;
 import management.entities.images.ImageStatus;
 import management.entities.users.UserDB;
 import management.enums.UserRole;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 @SpringBootTest(classes = Application.class)
-public class ImageRepositoryTest extends NATSTestSimulator {
+public class ImageRepositoryTest extends DbTestSimulator {
 
   @Autowired
   UserRepository userRepository;

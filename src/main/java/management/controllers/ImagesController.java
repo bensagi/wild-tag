@@ -52,4 +52,11 @@ public class ImagesController {
     imageService.validateImage(imageId, userEmail);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
+
+  @GetMapping("next_task")
+  @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.USER_ROLE})
+  public ResponseEntity<ImageApi> getNExtImageTask(@UserPrincipalParam("email") String email) {
+    ImageApi nextTask =  imageService.getNextTask(email);
+    return ResponseEntity.ok(nextTask);
+  }
 }
