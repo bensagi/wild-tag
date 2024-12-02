@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import management.entities.images.CoordinateDB;
+import management.entities.images.ImageContent;
 import management.entities.images.ImageDB;
 import management.entities.images.ImageStatus;
 import management.entities.users.UserDB;
@@ -249,6 +250,11 @@ public class ImageService {
     return outputStream.toByteArray();
   }
 
+  public ImageContent getImageContent(String imageId) {
+    ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageId)).orElseThrow();
+    return cloudStorageService.getImage(imageDB.getGcsFullPath());
+  }
+  
   public ImageApi getNextTask(String email) {
     UserDB user = usersRepository.findByEmail(email).orElseThrow();
 

@@ -1,14 +1,17 @@
 package management.services;
 
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.CopyWriter;
 import com.google.cloud.storage.StorageOptions;
 import io.micrometer.common.util.StringUtils;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import management.entities.images.ImageContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -82,6 +85,17 @@ public class CloudStorageService {
     } else {
       logger.error("Failed to delete the source object: {}", objectUri, new Exception());
     }
+  }
+
+  public ImageContent getImage(String uri) {
+    Blob blob = storageClient.get(getGetBlobId(uri));
+    if (blob == null) {
+      throw new RuntimeException("No such object exists");
+    }
+    String contentType = blob.getContentType();
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    blob.downloadTo(outputStream);
+    return new ImageContent(outputStream.toByteArray(), contentType);
   }
 
 
