@@ -15,6 +15,7 @@ spec:
             app: wild-tagger
 
         spec:
+          serviceAccountName: wild-tag
           restartPolicy: OnFailure
           containers:
             - name: wild-tagger

@@ -27,6 +27,7 @@ jobs:
   prepare-env-and-deploy:
     runs-on: ubuntu-latest
     env:
+      WILD_TAG_GCP_SA: ${{ vars.WILD_TAG_GCP_SA }}
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
       WILDTAG_CLUSTER: ${{ vars.WILDTAG_CLUSTER }}
       WILDTAG_CLUSTER_ZONE: ${{ vars.WILDTAG_CLUSTER_ZONE }}
@@ -110,6 +111,11 @@ jobs:
       - name: Install Env
         run:
           ${GITHUB_WORKSPACE}/deployment/scripts/deploy_env.sh ${{ inputs.env-name }} ${{ steps.gitSha.outputs.sha_short }} ${{ env.RECORD_SUFFIX }}
+      - name: Bind service account
+        run: |
+          gcloud iam service-accounts add-iam-policy-binding ${{ env.WILD_TAG_GCP_SA }}@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com \
+          		  --role roles/iam.workloadIdentityUser \
+          		  --member "serviceAccount:${{ env.GCP_PROJECT_ID }}.svc.id.goog[${{ inputs.env-name }}/wild-tag]"
 
       - name: Wait for availability
         run:
@@ -124,5 +130,3 @@ jobs:
         if: ${{ inputs.installation-type == 'fresh-install' }}
         run: |
           gcloud dns record-sets create ${{ inputs.env-name }}${{ env.RECORD_SUFFIX_FOR_GCLOUD }} --rrdatas=${{ steps.serviceIP.outputs.ip }} --type=A --ttl=60 --zone=${{ env.ZONE_NAME }}
-          
-          

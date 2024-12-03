@@ -14,6 +14,7 @@ spec:
       labels:
         app: image-message-wild-processor
     spec:
+      serviceAccountName: wild-tag
       containers:
         - name: image-message-wild-processor
           image: "me-west1-docker.pkg.dev/gcp-etigcp-nprd-12855/wild-tag/server:{{ .Values.core.imageTag }}"
