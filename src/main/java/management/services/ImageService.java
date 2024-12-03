@@ -1,8 +1,11 @@
 package management.services;
 
+import static management.entities.images.ImageStatus.PENDING;
+import static management.entities.images.ImageStatus.TAGGED;
 import static management.entities.images.ImageStatus.VALIDATED;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.Calendar;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wild_tag.model.CoordinatesApi;
 import com.wild_tag.model.ImageApi;
@@ -13,6 +16,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,6 +44,8 @@ public class ImageService {
   public static final String TRAIN = "train";
   public static final String IMAGES = "images";
   private Logger logger = LoggerFactory.getLogger(ImageService.class);
+
+  private static final String IMAGE_ASSIGN_LOCK = "image assign lock";
 
 
   @Value("${data_set_bucket:wild-tag-data-set}")
@@ -64,6 +71,8 @@ public class ImageService {
 
   @Value("${job.nats.imageProcessingTopic}")
   private String topic;
+  @Value("${imageValidationMinutes:30}")
+  private int imageValidationMinutes;
 
   public ImageService(CloudStorageService cloudStorageService, ImagesRepository imagesRepository,
       UserRepository usersRepository, NATSPublisher natsPublisher) {
@@ -106,20 +115,26 @@ public class ImageService {
   }
 
   public void tagImage(ImageApi imageApi, String userEmail) {
-    ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageApi.getId())).orElseThrow();
-    UserDB userDB = usersRepository.findByEmail(userEmail).orElseThrow();
-    imageDB.setTaggerUser(userDB);
-    imageDB.setStatus(ImageStatus.TAGGED);
-    imageDB.setCoordinates(imageApi.getCoordinates().stream().map(this::convertCoordinatesApiToCoordinatesDB).toList());
-    imagesRepository.save(imageDB);
+    synchronized (IMAGE_ASSIGN_LOCK) {
+      ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageApi.getId())).orElseThrow();
+      UserDB userDB = usersRepository.findByEmail(userEmail).orElseThrow();
+      imageDB.setTaggerUser(userDB);
+      imageDB.setStatus(ImageStatus.TAGGED);
+      imageDB.setStartHandled(getMinTimestamp());
+      imageDB.setCoordinates(imageApi.getCoordinates().stream().map(this::convertCoordinatesApiToCoordinatesDB).toList());
+      imagesRepository.save(imageDB);
+    }
   }
 
   public void validateImage(String imageId, String userEmail) {
-    ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageId)).orElseThrow();
-    UserDB validatorUser = usersRepository.findByEmail(userEmail).orElseThrow();
-    imageDB.setValidatorUser(validatorUser);
-    imageDB.setStatus(VALIDATED);
-    imagesRepository.save(imageDB);
+    synchronized (IMAGE_ASSIGN_LOCK) {
+      ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageId)).orElseThrow();
+      UserDB validatorUser = usersRepository.findByEmail(userEmail).orElseThrow();
+      imageDB.setValidatorUser(validatorUser);
+      imageDB.setStatus(VALIDATED);
+      imageDB.setStartHandled(getMinTimestamp());
+      imagesRepository.save(imageDB);
+    }
   }
 
   private ImageApi convertToImageApi(ImageDB imageDB) {
@@ -246,5 +261,42 @@ public class ImageService {
   public ImageContent getImageContent(String imageId) {
     ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageId)).orElseThrow();
     return cloudStorageService.getImage(imageDB.getGcsFullPath());
+  }
+  
+  public ImageApi getNextTask(String email) {
+
+    synchronized(IMAGE_ASSIGN_LOCK) {
+      UserDB user = usersRepository.findByEmail(email).orElseThrow();
+
+      Timestamp startHandled = getTimestampMinutesAgo(imageValidationMinutes);
+      Pageable pageable = PageRequest.of(0, 1); // Fetch only the first result
+
+      List<ImageDB> images = imagesRepository.getNextTask(PENDING, TAGGED, user, startHandled, pageable);
+
+      if (images.isEmpty()) {
+        return new ImageApi();
+      }
+
+      ImageDB imageDB = images.get(0);
+      imageDB.setStartHandled(getCurrentTimestamp());
+      imagesRepository.save(imageDB);
+      return convertToImageApi(imageDB);
+    }
+  }
+
+  static Timestamp getCurrentTimestamp() {
+    long currentTimeMillis = System.currentTimeMillis();
+    return new Timestamp(currentTimeMillis);
+  }
+
+
+  static Timestamp getTimestampMinutesAgo(int minutes) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.MINUTE, -minutes);
+    return new Timestamp(calendar.getTimeInMillis());
+  }
+
+  static Timestamp getMinTimestamp() {
+    return Timestamp.valueOf("1970-01-01 00:00:00");
   }
 }

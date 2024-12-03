@@ -5,9 +5,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import applications.Application;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wild_tag.model.ImageStatusApi;
 import java.util.Collections;
 import java.util.List;
 import management.entities.users.UserDB;
@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,11 +30,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import com.wild_tag.model.ImageApi;
 import com.wild_tag.model.CoordinatesApi;
-
-@SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @Sql(scripts = "/setup-test-images-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-public class ImagesControllerTest extends NATSTestSimulator {
+public class ImagesControllerTest extends SpringbootTestBase {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -123,5 +120,65 @@ public class ImagesControllerTest extends NATSTestSimulator {
     image = images.stream().filter(imageApi -> imageApi.getId().equals(imageId))
         .findFirst().get();
     Assertions.assertEquals("test@email.com", image.getValidatorUserId());
+  }
+
+  @Test
+  @WithMockUser
+  public void testGetNextImage_differentUserValidate() throws Exception {
+    MvcResult result = mockMvc.perform(get("/images/next_task").principal(
+                new UsernamePasswordAuthenticationToken(new UserDB("test", "test@email.com", UserRole.USER), null,
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_" + UserRole.USER.name()))))
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn();
+
+    ImageApi image = objectMapper.readValue(result.getResponse().getContentAsString(), ImageApi.class);
+    CoordinatesApi coordinates = new CoordinatesApi().animalId("1").yCenter(0.5).xCenter(0.5).height(0.5).width(0.5);
+    image.coordinates(Collections.singletonList(coordinates));
+
+    mockMvc.perform(put("/images/tag").principal(
+                new UsernamePasswordAuthenticationToken(new UserDB("test", "test@email.com", UserRole.ADMIN), null,
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_" + UserRole.ADMIN.name()))))
+            .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(image)))
+        .andExpect(status().isNoContent());
+
+    result = mockMvc.perform(get("/images/next_task").principal(
+                new UsernamePasswordAuthenticationToken(new UserDB("test2", "test2@email.com", UserRole.USER), null,
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_" + UserRole.USER.name()))))
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn();
+
+    ImageApi image2 = objectMapper.readValue(result.getResponse().getContentAsString(), ImageApi.class);
+
+    Assertions.assertEquals(image.getId(), image2.getId());
+    Assertions.assertEquals(ImageStatusApi.TAGGED, image2.getStatus());
+  }
+
+  @Test
+  @WithMockUser
+  public void testGetNextImage_imageInProgress() throws Exception {
+    MvcResult result = mockMvc.perform(get("/images/next_task").principal(
+                new UsernamePasswordAuthenticationToken(new UserDB("test", "test@email.com", UserRole.USER), null,
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_" + UserRole.USER.name()))))
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn();
+
+    ImageApi image = objectMapper.readValue(result.getResponse().getContentAsString(), ImageApi.class);
+    CoordinatesApi coordinates = new CoordinatesApi().animalId("1").yCenter(0.5).xCenter(0.5).height(0.5).width(0.5);
+    image.coordinates(Collections.singletonList(coordinates));
+
+    result = mockMvc.perform(get("/images/next_task").principal(
+                new UsernamePasswordAuthenticationToken(new UserDB("test2", "test2@email.com", UserRole.USER), null,
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_" + UserRole.USER.name()))))
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn();
+
+    ImageApi image2 = objectMapper.readValue(result.getResponse().getContentAsString(), ImageApi.class);
+
+    Assertions.assertNotEquals(image.getId(), image2.getId());
+    Assertions.assertEquals(ImageStatusApi.PENDING, image2.getStatus());
   }
 }
