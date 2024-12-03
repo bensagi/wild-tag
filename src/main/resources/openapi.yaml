@@ -183,7 +183,7 @@ paths:
       responses:
         '200':
           description: Successfully validated image.
-  /next_task:
+  /images/next_task:
     get:
       summary: Retrieve the next image task
       operationId: getNextImageTask

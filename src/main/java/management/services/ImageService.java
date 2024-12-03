@@ -45,6 +45,8 @@ public class ImageService {
   public static final String IMAGES = "images";
   private Logger logger = LoggerFactory.getLogger(ImageService.class);
 
+  private static final String IMAGE_ASSIGN_LOCK = "image assign lock";
+
 
   @Value("${data_set_bucket:wild-tag-data-set}")
   private String dataSetBucket;
@@ -113,20 +115,26 @@ public class ImageService {
   }
 
   public void tagImage(ImageApi imageApi, String userEmail) {
-    ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageApi.getId())).orElseThrow();
-    UserDB userDB = usersRepository.findByEmail(userEmail).orElseThrow();
-    imageDB.setTaggerUser(userDB);
-    imageDB.setStatus(ImageStatus.TAGGED);
-    imageDB.setCoordinates(imageApi.getCoordinates().stream().map(this::convertCoordinatesApiToCoordinatesDB).toList());
-    imagesRepository.save(imageDB);
+    synchronized (IMAGE_ASSIGN_LOCK) {
+      ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageApi.getId())).orElseThrow();
+      UserDB userDB = usersRepository.findByEmail(userEmail).orElseThrow();
+      imageDB.setTaggerUser(userDB);
+      imageDB.setStatus(ImageStatus.TAGGED);
+      imageDB.setStartHandled(getMinTimestamp());
+      imageDB.setCoordinates(imageApi.getCoordinates().stream().map(this::convertCoordinatesApiToCoordinatesDB).toList());
+      imagesRepository.save(imageDB);
+    }
   }
 
   public void validateImage(String imageId, String userEmail) {
-    ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageId)).orElseThrow();
-    UserDB validatorUser = usersRepository.findByEmail(userEmail).orElseThrow();
-    imageDB.setValidatorUser(validatorUser);
-    imageDB.setStatus(VALIDATED);
-    imagesRepository.save(imageDB);
+    synchronized (IMAGE_ASSIGN_LOCK) {
+      ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageId)).orElseThrow();
+      UserDB validatorUser = usersRepository.findByEmail(userEmail).orElseThrow();
+      imageDB.setValidatorUser(validatorUser);
+      imageDB.setStatus(VALIDATED);
+      imageDB.setStartHandled(getMinTimestamp());
+      imagesRepository.save(imageDB);
+    }
   }
 
   private ImageApi convertToImageApi(ImageDB imageDB) {
@@ -256,23 +264,39 @@ public class ImageService {
   }
   
   public ImageApi getNextTask(String email) {
-    UserDB user = usersRepository.findByEmail(email).orElseThrow();
 
-    Timestamp startHandled = getTimestampMinutesAgo(imageValidationMinutes);
-    Pageable pageable = PageRequest.of(0, 1); // Fetch only the first result
+    synchronized(IMAGE_ASSIGN_LOCK) {
+      UserDB user = usersRepository.findByEmail(email).orElseThrow();
 
-    List<ImageDB> images = imagesRepository.getNextTask(PENDING, TAGGED, user, startHandled, pageable);
+      Timestamp startHandled = getTimestampMinutesAgo(imageValidationMinutes);
+      Pageable pageable = PageRequest.of(0, 1); // Fetch only the first result
 
-    if (images.isEmpty()) {
-      return new ImageApi();
+      List<ImageDB> images = imagesRepository.getNextTask(PENDING, TAGGED, user, startHandled, pageable);
+
+      if (images.isEmpty()) {
+        return new ImageApi();
+      }
+
+      ImageDB imageDB = images.get(0);
+      imageDB.setStartHandled(getCurrentTimestamp());
+      imagesRepository.save(imageDB);
+      return convertToImageApi(imageDB);
     }
-
-    return convertToImageApi(images.get(0));
   }
+
+  static Timestamp getCurrentTimestamp() {
+    long currentTimeMillis = System.currentTimeMillis();
+    return new Timestamp(currentTimeMillis);
+  }
+
 
   static Timestamp getTimestampMinutesAgo(int minutes) {
     Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.MINUTE, -minutes);
     return new Timestamp(calendar.getTimeInMillis());
+  }
+
+  static Timestamp getMinTimestamp() {
+    return Timestamp.valueOf("1970-01-01 00:00:00");
   }
 }

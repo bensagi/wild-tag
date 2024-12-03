@@ -15,3 +15,5 @@ values ('[]', 'path5', 'tagged_path5', 'PENDING', null, null);
 
 insert into users (name, email, role)
 values ('test user', 'test@email.com', 'ADMIN');
+insert into users (name, email, role)
+values ('test user2', 'test2@email.com', 'USER');

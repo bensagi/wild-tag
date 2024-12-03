@@ -9,7 +9,6 @@ import management.enums.UserRole.UserRoleNames;
 import management.security.UserPrincipalParam;
 import management.services.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -65,9 +64,9 @@ public class ImagesController {
         .body(imageContent.getContent());
   }
 
-  @GetMapping("next_task")
+  @GetMapping("/next_task")
   @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.USER_ROLE})
-  public ResponseEntity<ImageApi> getNExtImageTask(@UserPrincipalParam("email") String email) {
+  public ResponseEntity<ImageApi> getNextImageTask(@UserPrincipalParam("email") String email) {
     ImageApi nextTask =  imageService.getNextTask(email);
     return ResponseEntity.ok(nextTask);
   }
