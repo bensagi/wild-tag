@@ -6,7 +6,7 @@ import Sidebar from './Sidebar';
 import UserManagement from './UserManagement';
 import Categories from "./Categories";
 import ImagesUploader from './ImagesUploader';
-import TaggingPage from "./TaggingPage";
+import TaggingPage from "./Tagging";
 
 function Dashboard({ username, role, handleLogout }) {
     return (
