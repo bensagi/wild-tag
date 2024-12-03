@@ -49,8 +49,9 @@ public class UsersControllerTest extends SpringbootTestBase {
 
   @Test
   public void test() {
-    assertThat(usersController).isNull();
+    assertThat(usersController).isNotNull();
   }
+
 
   @Test
   @WithMockUser(roles = {"ADMIN"})
