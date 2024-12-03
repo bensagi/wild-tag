@@ -1,0 +1,9 @@
+/* Container for a blank white page */
+.blank-page {
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
