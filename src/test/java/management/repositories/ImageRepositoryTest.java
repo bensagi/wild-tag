@@ -1,11 +1,10 @@
 package management.repositories;
 
-import applications.Application;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import management.controllers.NATSTestSimulator;
+import management.controllers.SpringbootTestBase;
 import management.entities.images.CoordinateDB;
 import management.entities.images.ImageDB;
 import management.entities.images.ImageStatus;
@@ -14,15 +13,10 @@ import management.enums.UserRole;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 
-@SpringBootTest(classes = Application.class)
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
-public class ImageRepositoryTest extends DbTestSimulator {
+public class ImageRepositoryTest extends SpringbootTestBase {
 
   @Autowired
   UserRepository userRepository;

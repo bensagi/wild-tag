@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-import applications.Application;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wild_tag.model.RoleApi;
 import com.wild_tag.model.UserApi;
@@ -18,16 +17,13 @@ import management.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
-
-@SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-public class UsersControllerTest extends NATSTestSimulator {
+public class UsersControllerTest extends SpringbootTestBase {
 
   @Autowired
   private UsersController usersController;
