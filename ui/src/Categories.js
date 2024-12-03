@@ -82,6 +82,11 @@ const Categories = () => {
         setEditedCategoryId(id);
     };
 
+    const addPressed = (id) => {
+        setNewCategory("");
+        setShowAddCategoryModal(true);
+    };
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownlRef.current && !dropdownlRef.current.contains(event.target)) {
@@ -116,7 +121,7 @@ const Categories = () => {
         <div className="management-page">
             <h1>Categories</h1>
             <div className="add-entity-container">
-                <button className="add-users-btn" onClick={() => setShowAddCategoryModal(true)}>
+                <button className="add-users-btn" onClick={addPressed}>
                     Add Category
                 </button>
             </div>
