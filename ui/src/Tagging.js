@@ -1,5 +1,5 @@
 import React from 'react';
-import './TaggingPage.css';
+import './Tagging.css';
 
 function TaggingPage() {
     return (
