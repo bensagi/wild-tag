@@ -138,13 +138,13 @@ auth:
   enablePostgresUser: true
   ## @param auth.postgresPassword Password for the "postgres" admin user. Ignored if `auth.existingSecret` is provided
   ##
-  postgresPassword: "fJ()MSMwsdq28js"
+  postgresPassword: ""
   ## @param auth.username Name for a custom user to create
   ##
   username: "wildtag"
   ## @param auth.password Password for the custom user to create. Ignored if `auth.existingSecret` is provided
   ##
-  password: "()wqPL453!"
+  password: ""
   ## @param auth.database Name for a custom database to create
   ##
   database: "wildtag"
