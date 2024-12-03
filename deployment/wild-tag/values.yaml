@@ -1,2 +1,4 @@
 global:
   serverUrl: wild-tag.portshift.co
+  projectId: gcp-etigcp-nprd-12855
+  GSA: wild-tag #google service account

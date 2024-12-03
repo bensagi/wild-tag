@@ -14,6 +14,7 @@ spec:
       labels:
         app: api-wild-server
     spec:
+      serviceAccountName: wild-tag
       containers:
         - name: api-wild-server
           image: "me-west1-docker.pkg.dev/gcp-etigcp-nprd-12855/wild-tag/server:{{ .Values.core.imageTag }}"
