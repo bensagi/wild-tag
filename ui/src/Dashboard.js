@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 import UserManagement from './UserManagement';
 import Categories from "./Categories";
 import ImagesUploader from './ImagesUploader';
+import TaggingPage from "./TaggingPage";
 
 function Dashboard({ username, role, handleLogout }) {
     return (
@@ -15,12 +16,11 @@ function Dashboard({ username, role, handleLogout }) {
                 <Sidebar role={role}/>
                 <div className="page-content">
                     <Routes>
-                        <Route path="/" element={<div>Welcome to the Home Page</div>} />
+                        <Route path="/" element={<TaggingPage />} />
                         {role === 'ADMIN' && (
                             <>
                                 <Route path="/settings" element={<UserManagement />} />
                                 <Route path="/categories" element={<Categories />} />
-                                <Route path="/projects" element={<div>Projects Page</div>} />
                                 <Route path="/upload" element={<ImagesUploader />} />
                             </>
                         )}
