@@ -23,7 +23,7 @@ function ImagesUploader() {
     const handleBucketSubmit = async () => {
         const sanitizedLink = sanitizeInput(bucketLink);
 
-        if (!sanitizedLink || !isValidURL(sanitizedLink)) {
+        if (!sanitizedLink) {
             setMessage({ type: 'error', text: 'Please enter a valid GCP bucket link.' });
             return;
         }

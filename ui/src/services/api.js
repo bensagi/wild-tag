@@ -28,6 +28,9 @@ async function apiCall(endpoint, method = "GET", body = null, headers = {}, resp
     try {
         const response = await fetch(url, options);
         console.log('Response status:', response.status);
+        if(responseType === "blob") {
+            return response;
+        }
         const rawText = await response.text();
         console.log('Raw response text:', rawText);
 

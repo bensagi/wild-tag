@@ -105,6 +105,7 @@ public class ImageService {
     images.forEach(imagePath -> {
       ImageDB imageDB = new ImageDB();
       imageDB.setGcsFullPath(imagePath);
+      imageDB.setStatus(PENDING);
       imagesRepository.save(imageDB);
     });
     logger.info(images.size() + " images loaded successfully");
