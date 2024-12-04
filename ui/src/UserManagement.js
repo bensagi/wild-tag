@@ -20,12 +20,16 @@ function UserManagement() {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const data = await apiCall('/wild-tag/users', 'GET', null, {
+                const data = await apiCall('/wild-tag/ausers', 'GET', null, {
                     Authorization: `Bearer ${localStorage.getItem('authToken')}`,
                 });
                 setUsers(data);
             } catch (err) {
-                setError(err.message);
+                setError(() => {
+                    // re-throw this error within the updater function
+                    // it will be triggered during state update
+                    throw err;
+                });
             } finally {
                 setLoading(false);
             }

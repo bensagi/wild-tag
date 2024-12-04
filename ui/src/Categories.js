@@ -24,7 +24,11 @@ const Categories = () => {
 
                 setCategories(result.entries || {});
             } catch (err) {
-                setError(err.message);
+                setError(() => {
+                    // re-throw this error within the updater function
+                    // it will be triggered during state update
+                    throw err;
+                });
             } finally {
                 setLoading(false);
             }
