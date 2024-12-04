@@ -5,6 +5,9 @@ import static management.entities.images.ImageStatus.TAGGED;
 import static management.entities.images.ImageStatus.VALIDATED;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
 import java.util.Calendar;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wild_tag.model.CoordinatesApi;
@@ -22,12 +25,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import management.entities.images.CoordinateDB;
-import management.entities.images.ImageContent;
+import management.entities.images.GCSFileContent;
 import management.entities.images.ImageDB;
 import management.entities.images.ImageStatus;
 import management.entities.users.UserDB;
 import management.repositories.ImagesRepository;
 import management.repositories.UserRepository;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,16 +105,39 @@ public class ImageService {
     natsPublisher.sendMessage(topic, objectMapper.writeValueAsString(imagesBucketApi));
   }
 
-  public void loadImagesBackground(ImagesBucketApi imagesBucketApi) {
+  public void loadImagesBackground(ImagesBucketApi imagesBucketApi) throws IOException {
     logger.info("Loading images from bucket: {}", imagesBucketApi.getBucketName());
-    List<String> images = cloudStorageService.listBucket(imagesBucketApi.getBucketName());
-    images.forEach(imagePath -> {
-      ImageDB imageDB = new ImageDB();
-      imageDB.setGcsFullPath(imagePath);
-      imageDB.setStatus(PENDING);
-      imagesRepository.save(imageDB);
-    });
-    logger.info(images.size() + " images loaded successfully");
+    List<String> files = cloudStorageService.listFilesInPath(imagesBucketApi.getBucketName());
+
+    Map<String, ImageMetaData> imageNameToMetaData = extractFolderMetaData(imagesBucketApi, files);
+
+    files.forEach(imagePath -> insertImageToDB(imagePath, imageNameToMetaData));
+    logger.info(files.size() + " images loaded successfully");
+  }
+
+  private Map<String, ImageMetaData> extractFolderMetaData(ImagesBucketApi imagesBucketApi, List<String> files)
+      throws IOException {
+    String csvUri = files.stream().filter(x -> x.endsWith(".csv")).findFirst()
+        .orElseThrow(() -> new RuntimeException("csv not found in " + imagesBucketApi.getBucketName()));
+    GCSFileContent csvContent = cloudStorageService.getGCSFileContent(csvUri);
+    Map<String, ImageMetaData> imageNameToMetaData = loadCsvToMap(csvContent.getContent());
+    files.remove(csvUri);
+    return imageNameToMetaData;
+  }
+
+  private void insertImageToDB(String imagePath, Map<String, ImageMetaData> imageNameToMetaData) {
+    ImageDB imageDB = new ImageDB();
+    ImageMetaData imageMetaData = imageNameToMetaData.get(imagePath.replace("GS://", "").split("/", 2)[1]);
+    if (imageMetaData == null) {
+      logger.warn("missing image meta data for {}", imagePath);
+      imageMetaData = new ImageMetaData(null, null, null, null);
+    }
+    imageDB.setGcsFullPath(imagePath);
+    imageDB.setFolder(imageMetaData.folderName());
+    imageDB.setJpgName(imageMetaData.jpgName());
+    imageDB.setJpgTime(imageMetaData.jpgTime());
+    imageDB.setJpgDate(imageMetaData.jpgDate());
+    imagesRepository.save(imageDB);
   }
 
   public List<ImageApi> getImages() {
@@ -259,9 +288,9 @@ public class ImageService {
     return outputStream.toByteArray();
   }
 
-  public ImageContent getImageContent(String imageId) {
+  public GCSFileContent getImageContent(String imageId) {
     ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageId)).orElseThrow();
-    return cloudStorageService.getImage(imageDB.getGcsFullPath());
+    return cloudStorageService.getGCSFileContent(imageDB.getGcsFullPath());
   }
   
   public ImageApi getNextTask(String email) {
@@ -300,4 +329,28 @@ public class ImageService {
   static Timestamp getMinTimestamp() {
     return Timestamp.valueOf("1970-01-01 00:00:00");
   }
+
+  public Map<String, ImageMetaData> loadCsvToMap(byte[] csvData) throws IOException {
+    Map<String, ImageMetaData> imageMetaDataMap = new HashMap<>();
+
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(csvData)));
+        CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withDelimiter(',').withHeader())) {
+
+      for (CSVRecord record : csvParser) {
+        String folderName = record.get("folder_name");
+        String jpgName = record.get("jpg_name");
+        String jpgDate = record.get("jpg_date");
+        String jpgTime = record.get("jpg_time");
+
+        ImageMetaData imageMetaData = new ImageMetaData(folderName, jpgName, jpgDate, jpgTime);
+        imageMetaDataMap.put(jpgName, imageMetaData);
+      }
+    }
+
+    return imageMetaDataMap;
+
+  }
+
+
+  record ImageMetaData(String folderName, String jpgName, String jpgDate, String jpgTime){}
 }

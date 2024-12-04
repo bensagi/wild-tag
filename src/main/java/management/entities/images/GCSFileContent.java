@@ -1,11 +1,11 @@
 package management.entities.images;
 
-public class ImageContent {
+public class GCSFileContent {
 
   byte[] content;
   String contentType;
 
-  public ImageContent(byte[] content, String contentType) {
+  public GCSFileContent(byte[] content, String contentType) {
     this.content = content;
     this.contentType = contentType;
   }

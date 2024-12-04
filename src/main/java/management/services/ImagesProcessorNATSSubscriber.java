@@ -6,6 +6,7 @@ import com.wild_tag.model.ImagesBucketApi;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import jakarta.annotation.PostConstruct;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,10 +34,10 @@ public class ImagesProcessorNATSSubscriber {
       ImagesBucketApi imagesBucketApi = null;
       try {
         imagesBucketApi = objectMapper.readValue(messageData, ImagesBucketApi.class);
-      } catch (JsonProcessingException e) {
+        imageService.loadImagesBackground(imagesBucketApi);
+      } catch (IOException e) {
         throw new RuntimeException(e);
       }
-      imageService.loadImagesBackground(imagesBucketApi);
     });
   }
 }

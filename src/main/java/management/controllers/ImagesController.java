@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wild_tag.model.ImageApi;
 import com.wild_tag.model.ImagesBucketApi;
 import java.util.List;
-import management.entities.images.ImageContent;
+import management.entities.images.GCSFileContent;
 import management.enums.UserRole.UserRoleNames;
 import management.security.UserPrincipalParam;
 import management.services.ImageService;
@@ -58,7 +58,7 @@ public class ImagesController {
   @GetMapping("{imageId}")
   @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.USER_ROLE})
   public ResponseEntity<byte[]> getImage(@PathVariable String imageId) {
-    ImageContent imageContent = imageService.getImageContent(imageId);
+    GCSFileContent imageContent = imageService.getImageContent(imageId);
     return ResponseEntity.ok()
         .contentType(MediaType.valueOf(imageContent.getContentType()))
         .body(imageContent.getContent());
