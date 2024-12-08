@@ -1,4 +1,12 @@
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+const getBasePath = () => {
+    const { protocol, host } = window.location;
+    if (host.includes("localhost")) {
+        return process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+    }
+    return `${protocol}//${host}/api`;
+}
+
+const API_BASE_URL = getBasePath();
 
 /**
  * General function to make API calls.
