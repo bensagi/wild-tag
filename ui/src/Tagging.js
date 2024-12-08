@@ -98,6 +98,7 @@ function TaggingPage() {
             }
         } catch (error) {
             console.error('Error fetching image:', error);
+            setError("Failed to load image. Please try again later.");
             setIsLoading(false);
         }
     };
@@ -257,7 +258,7 @@ function TaggingPage() {
         return <ErrorBox message={error} onClose={() => setError('')} />;
     }
 
-    if(loading) {
+    if(isLoading) {
         return <div className="loading">Loading Image...</div>;
     }
 
