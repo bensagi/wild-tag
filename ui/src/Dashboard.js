@@ -7,7 +7,6 @@ import UserManagement from './UserManagement';
 import Categories from "./Categories";
 import ImagesUploader from './ImagesUploader';
 import TaggingPage from "./Tagging";
-import ErrorBoundary from "./Error";
 
 function Dashboard({username, role, handleLogout}) {
     return (
@@ -16,7 +15,6 @@ function Dashboard({username, role, handleLogout}) {
             <div className="main-content">
                 <Sidebar role={role}/>
                 <div className="page-content">
-                    <ErrorBoundary>
                         <Routes>
                             <Route path="/" element={<TaggingPage/>}/>
                             {role === 'ADMIN' && (
@@ -27,7 +25,6 @@ function Dashboard({username, role, handleLogout}) {
                                 </>
                             )}
                         </Routes>
-                    </ErrorBoundary>
                 </div>
 
             </div>

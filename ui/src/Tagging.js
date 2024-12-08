@@ -1,9 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import './Tagging.css';
 import apiCall from "./services/api";
+import ErrorBox from "./Error";
 
 function TaggingPage() {
     const [imageSrc, setImageSrc] = useState('');
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchImage = async () => {
@@ -22,12 +25,23 @@ function TaggingPage() {
                     console.error('Failed to fetch image content');
                 }
             } catch (error) {
+                setError("Failed to load image. Please try again later.");
                 console.error('Error fetching image:', error);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchImage();
     }, []);
+
+    if (error) {
+        return <ErrorBox message={error} onClose={() => setError('')} />;
+    }
+
+    if(loading) {
+        return <div className="loading">Loading Image...</div>;
+    }
 
     return (
         <div className="image-tag-page">

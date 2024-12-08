@@ -1,29 +1,14 @@
-import React, { Component } from 'react';
+import React from 'react';
+import './ErrorBox.css';
 
-class ErrorBoundary extends Component {
-    constructor(props) {
-        super(props);
-        this.state = { hasError: false };
-    }
+const ErrorBox = ({ message }) => {
+    if (!message) return null;
 
-    static getDerivedStateFromError(error) {
-        // Update state to display the fallback UI on error
-        return { hasError: true };
-    }
+    return (
+        <div className="error-box">
+            <span>{message}</span>
+        </div>
+    );
+};
 
-    componentDidCatch(error, errorInfo) {
-        // You can also log the error to an error reporting service
-        console.error('Error caught by ErrorBoundary:', error, errorInfo);
-    }
-
-    render() {
-        if (this.state.hasError) {
-            // Render any custom fallback UI
-            return <div>Something went wrong. Please try again later.</div>;
-        }
-
-        return this.props.children;
-    }
-}
-
-export default ErrorBoundary;
+export default ErrorBox;
