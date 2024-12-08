@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Stage, Layer, Rect, Text, Image as KonvaImage } from 'react-konva';
 import './Tagging.css';
+import ErrorBox from "./Error";
 import apiCall from './services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUndo, faRedo } from '@fortawesome/free-solid-svg-icons';
 
 function TaggingPage() {
     const [imageSrc, setImageSrc] = useState('');
+    const [error, setError] = useState(null);
     const [currentImageId, setCurrentImageId] = useState(''); // Updated to track the image ID
     const [categories, setCategories] = useState({});
     const [animalColors, setAnimalColors] = useState({});
@@ -53,7 +55,8 @@ function TaggingPage() {
 
                 setAnimalColors(colors);
             } catch (err) {
-                console.error('Error fetching categories:', err.message);
+                setError("Failed to load image. Please try again later.");
+                console.error('Error fetching image:', error);
             }
         };
 
@@ -95,6 +98,7 @@ function TaggingPage() {
             }
         } catch (error) {
             console.error('Error fetching image:', error);
+            setError("Failed to load image. Please try again later.");
             setIsLoading(false);
         }
     };
@@ -249,6 +253,14 @@ function TaggingPage() {
         counts[animal] = boxes.filter((box) => box.animal === animal).length;
         return counts;
     }, {});
+
+    if (error) {
+        return <ErrorBox message={error} onClose={() => setError('')} />;
+    }
+
+    if(isLoading) {
+        return <div className="loading">Loading Image...</div>;
+    }
 
     return (
         <div className="image-tag-page">

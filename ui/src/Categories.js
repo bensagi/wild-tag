@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { FaEllipsisV } from "react-icons/fa";
 import apiCall from "./services/api";
+import ErrorBox from "./Error";
 
 const Categories = () => {
     const [categories, setCategories] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [updateCategoryError, setUpdateCategoryError] = useState(null);
     const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
     const [newCategory, setNewCategory] = useState("");
     const [editedCategoryId, setEditedCategoryId] = useState("");
@@ -24,7 +26,7 @@ const Categories = () => {
 
                 setCategories(result.entries || {});
             } catch (err) {
-                setError(err.message);
+                setError("Failed to fetch categories. Please try again later.");
             } finally {
                 setLoading(false);
             }
@@ -36,25 +38,30 @@ const Categories = () => {
     const handleAddCategory = async () => {
         try {
             if (!categories || typeof categories !== 'object') return;
-
+            let newCategories = { ...categories };
             let maxId = 0;
-            if (Object.keys(categories).length > 0) {
-                const ids = Object.keys(categories).map(Number);
+            if (Object.keys(newCategories).length > 0) {
+                const ids = Object.keys(newCategories).map(Number);
                 maxId = Math.max(...ids);
             }
 
             const newId = maxId + 1;
-            categories[newId] = newCategory;
+            newCategories[newId] = newCategory;
 
             await apiCall('/wild-tag/categories', 'PUT', { entries: categories }, {
                 Authorization: `Bearer ${localStorage.getItem('authToken')}`,
             }, "text");
-            setCategories({ ...categories });
+            setCategories({ ...newCategories });
             setShowAddCategoryModal(false);
         } catch (err) {
-            setError(err.message);
+            setUpdateCategoryError(err.message);
         }
     };
+
+    const handleCancelAddCategory = () => {
+        setShowAddCategoryModal(false);
+        setUpdateCategoryError('');
+    }
 
     const handleEditCategory = async () => {
         try {
@@ -67,9 +74,14 @@ const Categories = () => {
             setCategories({ ...categories });
             setShowEditCategoryModal(false);
         } catch (err) {
-            setError(err.message);
+            setUpdateCategoryError(err.message);
         }
     };
+
+    const handleCancelEditCategory = () => {
+        setShowEditCategoryModal(false);
+        setUpdateCategoryError('');
+    }
 
     const toggleDropdown = (categoryId) => {
         setVisibleDropdown((prev) => (prev === categoryId ? null : categoryId));
@@ -114,7 +126,7 @@ const Categories = () => {
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+        return <ErrorBox message={error} onClose={() => setError('')} />;
     }
 
     return (
@@ -169,13 +181,14 @@ const Categories = () => {
                             onChange={(e) => setNewCategory(e.target.value)}
                         />
                         <div className="modal-actions">
-                            <button className="cancel-btn" onClick={() => setShowAddCategoryModal(false)}>
+                            <button className="cancel-btn" onClick={handleCancelAddCategory}>
                                 Cancel
                             </button>
                             <button className="send-invite-btn" onClick={handleAddCategory}>
                                 Add Category
                             </button>
                         </div>
+                        {updateCategoryError && <ErrorBox message={updateCategoryError} />}
                     </div>
                 </div>
             )}
@@ -191,13 +204,14 @@ const Categories = () => {
                             onChange={(e) => setNewCategory(e.target.value)}
                         />
                         <div className="modal-actions">
-                            <button className="cancel-btn" onClick={() => setShowEditCategoryModal(false)}>
+                            <button className="cancel-btn" onClick={handleCancelEditCategory}>
                                 Cancel
                             </button>
                             <button className="send-invite-btn" onClick={handleEditCategory}>
                                 Edit Category
                             </button>
                         </div>
+                        {updateCategoryError && <ErrorBox message={updateCategoryError} />}
                     </div>
                 </div>
             )}

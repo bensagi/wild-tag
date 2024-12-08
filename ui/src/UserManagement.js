@@ -1,12 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './UserManagement.css';
 import { FaEllipsisV } from 'react-icons/fa';
-import apiCall from './services/api'; // Import the API utility
+import apiCall from './services/api';
+import ErrorBox from "./Error"; // Import the API utility
 
 function UserManagement() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [addUserError, setAddUserError] = useState(null);
+    const [changeRoleUserError, setChangeRoleUserError] = useState(null);
+    const [deleteUserError, setDeleteUserError] = useState(null);
     const [visibleDropdown, setVisibleDropdown] = useState(null);
     const [showAddUsersModal, setShowAddUsersModal] = useState(false);
     const [showChangeRoleModal, setShowChangeRoleModal] = useState(false);
@@ -24,8 +28,9 @@ function UserManagement() {
                     Authorization: `Bearer ${localStorage.getItem('authToken')}`,
                 });
                 setUsers(data);
+                setError('')
             } catch (err) {
-                setError(err.message);
+                setError("Failed to load users. Please try again later.");
             } finally {
                 setLoading(false);
             }
@@ -55,6 +60,12 @@ function UserManagement() {
         setVisibleDropdown((prev) => (prev === email ? null : email));
     };
 
+    const handleCancelAddUsers = () => {
+        setShowAddUsersModal(false);
+        setNewUsers("");
+        setAddUserError('');
+    }
+
     const handleAddUsers = async () => {
         const emails = newUsers.split(',').map((email) => email.trim());
         const validEmails = emails.filter((email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
@@ -71,15 +82,16 @@ function UserManagement() {
         }));
 
         try {
-            const createdUsers = await apiCall('/wild-tag/users/bulk', 'POST', usersToCreate, {
+            const createdUsers = await apiCall('/wild-tag/ausers/bulk', 'POST', usersToCreate, {
                 Authorization: `Bearer ${localStorage.getItem('authToken')}`,
             });
             setUsers((prevUsers) => [...prevUsers, ...createdUsers]);
             alert('Users added successfully!');
             setShowAddUsersModal(false);
             setNewUsers("");
+            setAddUserError('');
         } catch (err) {
-            alert(err.message);
+            setAddUserError("Failed to add users. Please try again later.");
         }
     };
 
@@ -109,6 +121,11 @@ function UserManagement() {
         }
     };
 
+    const handleCancelChangeRole = () => {
+        setShowChangeRoleModal(false);
+        setChangeRoleUserError('');
+    }
+
     const handleDeleteUser = async () => {
         if (selectedUser) {
             try {
@@ -124,12 +141,17 @@ function UserManagement() {
         }
     };
 
+    const handleCancelDeleteUser = () => {
+        setShowDeleteUserModal(false);
+        setDeleteUserError('');
+    }
+
     if (loading) {
         return <div>Loading users...</div>;
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+        return <ErrorBox message={error} onClose={() => setError('')} />;
     }
 
     return (
@@ -203,13 +225,14 @@ function UserManagement() {
                             <option value="USER">User</option>
                         </select>
                         <div className="modal-actions">
-                            <button className="cancel-btn" onClick={() => setShowAddUsersModal(false)}>
+                            <button className="cancel-btn" onClick={handleCancelAddUsers}>
                                 Cancel
                             </button>
                             <button className="send-invite-btn" onClick={handleAddUsers}>
                                 Add Users
                             </button>
                         </div>
+                        {addUserError && <ErrorBox message={addUserError} onClose={() => setAddUserError('')} />}
                     </div>
                 </div>
             )}
@@ -223,13 +246,14 @@ function UserManagement() {
                             <option value="USER">User</option>
                         </select>
                         <div className="modal-actions">
-                            <button className="cancel-btn" onClick={() => setShowChangeRoleModal(false)}>
+                            <button className="cancel-btn" onClick={handleCancelChangeRole}>
                                 Cancel
                             </button>
                             <button className="send-invite-btn" onClick={handleChangeRole}>
                                 Update Role
                             </button>
                         </div>
+                        {changeRoleUserError && <ErrorBox message={changeRoleUserError} onClose={() => setChangeRoleUserError('')} />}
                     </div>
                 </div>
             )}
@@ -240,7 +264,7 @@ function UserManagement() {
                         <h2>Delete User</h2>
                         <p>Are you sure you want to delete the user with email {selectedUser?.email}?</p>
                         <div className="modal-actions">
-                            <button className="cancel-btn" onClick={() => setShowDeleteUserModal(false)}>
+                            <button className="cancel-btn" onClick={handleCancelDeleteUser}>
                                 Cancel
                             </button>
                             <button className="send-invite-btn" onClick={handleDeleteUser}>
@@ -248,6 +272,7 @@ function UserManagement() {
                             </button>
                         </div>
                     </div>
+                    {deleteUserError && <ErrorBox message={deleteUserError} onClose={() => setDeleteUserError('')} />}
                 </div>
             )}
         </div>
