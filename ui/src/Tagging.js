@@ -35,7 +35,7 @@ function TaggingPage() {
 
     const stageRef = useRef(null);
     const containerRef = useRef(null);
-    const usedColors = new Set();
+    const usedColors = useRef(new Set());
 
     const generateUniqueBrightColor = () => {
         let color;
@@ -44,8 +44,8 @@ function TaggingPage() {
             const g = Math.floor(Math.random() * 156 + 100);
             const b = Math.floor(Math.random() * 156 + 100);
             color = `rgb(${r}, ${g}, ${b})`;
-        } while (usedColors.has(color));
-        usedColors.add(color);
+        } while (usedColors.current.has(color));
+        usedColors.current.add(color);
         return color;
     };
 
@@ -66,7 +66,7 @@ function TaggingPage() {
 
                 setAnimalColors(colors);
             } catch (err) {
-                setError("Failed to load image. Please try again later.");
+                setError("Failed to load categories. Please try again later.");
                 console.error('Error fetching categories:', err);
             }
         };
@@ -104,6 +104,10 @@ function TaggingPage() {
                 const img = new window.Image();
                 img.onload = () => {
                     setImageSize({ width: img.width, height: img.height });
+                    setIsLoading(false); // Image loaded
+                };
+                img.onerror = () => {
+                    setError("Failed to load image. Please try again later.");
                     setIsLoading(false);
                 };
                 img.src = url;
@@ -393,11 +397,11 @@ function TaggingPage() {
                 Authorization: `Bearer ${localStorage.getItem('authToken')}`,
             });
 
-            alert("Boxes submitted successfully! Loading next image...");
             setOriginalBoxes(boxes);
             fetchNextTask();
         } catch (error) {
             console.error("Error submitting tagging data:", error);
+            alert("Failed to submit tagging data. Please try again.");
         }
     };
 
@@ -406,10 +410,10 @@ function TaggingPage() {
             await apiCall(`/wild-tag/images/${currentImageId}/validate`, 'PUT', null, {
                 Authorization: `Bearer ${localStorage.getItem('authToken')}`,
             });
-            alert('Image validated successfully! Loading next image...');
             fetchNextTask();
         } catch (error) {
             console.error('Error validating image:', error);
+            alert("Failed to validate image. Please try again.");
         }
     };
 
@@ -450,10 +454,6 @@ function TaggingPage() {
 
     if (error) {
         return <ErrorBox message={error} onClose={() => setError('')} />;
-    }
-
-    if(isLoading) {
-        return <div className="loading">Loading Image...</div>;
     }
 
     return (
