@@ -376,7 +376,7 @@ public class ImageService {
 
   public String createReport() throws JsonProcessingException {
     StringBuilder csvBuilder = new StringBuilder();
-    // Append the header
+
     CategoriesApi categories = categoriesService.getCategoriesOrThrow();
 
     setReportHeader(csvBuilder, categories);
