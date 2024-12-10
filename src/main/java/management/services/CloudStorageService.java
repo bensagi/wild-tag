@@ -44,7 +44,7 @@ public class CloudStorageService {
     storageClient
         .list(bucketName, Storage.BlobListOption.prefix(prefix))
         .iterateAll()
-        .forEach(blob -> files.add("gs://" + blob.getBucket() + "/" + blob.getName()));
+        .forEach(blob -> files.add(GS + blob.getBucket() + "/" + blob.getName()));
     return files;
   }
 
@@ -80,7 +80,7 @@ public class CloudStorageService {
   }
 
   private static BlobId getGetBlobId(String uri) {
-    String[] sourceUriParts = uri.replace("gs://", "").split("/", 2);
+    String[] sourceUriParts = uri.replace(GS, "").split("/", 2);
     return BlobId.of(sourceUriParts[0], sourceUriParts[1]);
   }
 
