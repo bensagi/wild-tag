@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -18,7 +19,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EntityScan(basePackages = "management.entities")
 public class Tagger implements CommandLineRunner {
 
-  private Logger logger = LoggerFactory.getLogger(Tagger.class);
+  private static final Logger logger = LoggerFactory.getLogger(Tagger.class);
 
   @Autowired ImageService imageService;
 
@@ -26,18 +27,19 @@ public class Tagger implements CommandLineRunner {
   private int limit;
 
   public static void main(String[] args) {
-    SpringApplication.run(Tagger.class, args);
-    System.exit(0);
+    SpringApplication application = new SpringApplication(Tagger.class);
+    application.setWebApplicationType(WebApplicationType.NONE);
+    application.run(args);
   }
 
   @Override
   public void run(String... args) throws Exception {
-
+    logger.info("Starting tag files process");
     int handled = 0;
 
     while (true) {
       List<ImageDB> images = imageService.getValidatedImages(limit);
-      logger.debug("found {} images to build tag", images.size());
+      logger.info("found {} images to build tag", images.size());
       if (images.isEmpty()) {
         logger.info("tagging process finished. handled {} images", handled);
         return;
@@ -46,7 +48,7 @@ public class Tagger implements CommandLineRunner {
       for (ImageDB image : images) {
         try {
           imageService.buildImageTag(image);
-          logger.debug("image {} handled", image.getId());
+          logger.info("image {} handled", image.getId());
           handled++;
         }
         catch (Exception e) {
