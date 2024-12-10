@@ -35,7 +35,7 @@ jobs:
     env:
       WILD_TAG_GCP_SA: ${{ vars.WILD_TAG_GCP_SA }}
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-      WILDTAG_CLUSTER: ${{ vars.WILDTAG_CLUSTER }}
+      WILDTAG_CLUSTER: ${{ vars.WILDTAG_AUTO_CLUSTER }}
       WILDTAG_CLUSTER_ZONE: ${{ vars.WILDTAG_CLUSTER_ZONE }}
       ZONE_NAME: ${{ vars.ZONE_NAME }}
       RECORD_SUFFIX: ${{ vars.RECORD_SUFFIX }}
