@@ -10,7 +10,6 @@ import com.wild_tag.model.CategoriesApi;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Calendar;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wild_tag.model.CoordinatesApi;
@@ -23,7 +22,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,40 +122,61 @@ public class ImageService {
     logger.info("read meta data");
     Map<String, ImageMetaData> imageNameToMetaData = extractFolderMetaData(imagesBucketApi, files);
 
-    logger.info("start process {} images", imageNameToMetaData.keySet().size());
-    files.forEach(imagePath -> insertImageToDB(imagePath, imageNameToMetaData));
+    int numOfImages = files.size() - 1;
+    int currentImage = 0;
+    logger.info("start process {} images", numOfImages);
+    for (String file : files) {
+      insertImageToDB(file, imageNameToMetaData, numOfImages, currentImage);
+      currentImage++;
+    }
     logger.info(files.size() + " images loaded successfully");
   }
 
-  private Map<String, ImageMetaData> extractFolderMetaData(ImagesBucketApi imagesBucketApi, List<String> files)
-      throws IOException {
-    String csvUri = files.stream().filter(x -> x.endsWith(".csv")).findFirst()
-        .orElseThrow(() -> new RuntimeException("csv not found in " + imagesBucketApi.getBucketName()));
-    GCSFileContent csvContent = cloudStorageService.getGCSFileContent(csvUri);
-    Map<String, ImageMetaData> imageNameToMetaData = loadCsvToMap(csvContent.getContent());
-    files.remove(csvUri);
-    return imageNameToMetaData;
-  }
-
-  private void insertImageToDB(String imagePath, Map<String, ImageMetaData> imageNameToMetaData) {
+  private Map<String, ImageMetaData> extractFolderMetaData(ImagesBucketApi imagesBucketApi, List<String> files) {
     try {
-      ImageDB imageDB = new ImageDB();
-      ImageMetaData imageMetaData = imageNameToMetaData.get(imagePath.replace("GS://", "").split("/", 2)[1]);
-      if (imageMetaData == null) {
-        logger.warn("missing image meta data for {}", imagePath);
-        imageMetaData = new ImageMetaData(null, null, null, null);
-      }
-      imageDB.setGcsFullPath(imagePath);
-      imageDB.setFolder(imageMetaData.folderName());
-      imageDB.setName(imageMetaData.jpgName());
-      imageDB.setTime(imageMetaData.jpgTime());
-      imageDB.setDate(imageMetaData.jpgDate());
-      imagesRepository.save(imageDB);
+      String csvUri = files.stream().filter(x -> x.endsWith(".csv")).findFirst()
+          .orElseThrow(() -> new RuntimeException("csv not found in " + imagesBucketApi.getBucketName()));
+      GCSFileContent csvContent = cloudStorageService.getGCSFileContent(csvUri);
+      Map<String, ImageMetaData> imageNameToMetaData = loadCsvToMap(csvContent.getContent());
+      files.remove(csvUri);
+      return imageNameToMetaData;
     }
     catch (Exception e) {
+      logger.warn("failed to load meta data for {}. continue loading images without meta data",
+          imagesBucketApi.getBucketName(), e);
+      return null;
+    }
+  }
+
+  private void insertImageToDB(String imagePath, Map<String, ImageMetaData> imageNameToMetaData, int numOfImages,
+      int currentImage) {
+    try {
+      ImageDB imageDB = new ImageDB();
+      imageDB.setGcsFullPath(imagePath);
+
+      setImageMetaData(imagePath, imageNameToMetaData, imageDB);
+
+      imagesRepository.save(imageDB);
+      logger.debug("processed {}/{} images", currentImage, numOfImages);
+    } catch (Exception e) {
       logger.error("failed to save image {}", imagePath, e);
     }
+  }
 
+  private void setImageMetaData(String imagePath, Map<String, ImageMetaData> imageNameToMetaData, ImageDB imageDB) {
+    if (imageNameToMetaData == null) {
+      return;
+    }
+
+    ImageMetaData imageMetaData = imageNameToMetaData.get(imagePath.replace("GS://", "").split("/", 2)[1]);
+    if (imageMetaData == null) {
+      logger.warn("missing image meta data for {}", imagePath);
+      imageMetaData = new ImageMetaData(null, null, null, null);
+    }
+    imageDB.setFolder(imageMetaData.folderName());
+    imageDB.setName(imageMetaData.jpgName());
+    imageDB.setTime(imageMetaData.jpgTime());
+    imageDB.setDate(imageMetaData.jpgDate());
   }
 
   public List<ImageApi> getImages() {
@@ -383,7 +402,8 @@ public class ImageService {
     int offset = 0;
     List<ImageDB> images;
     while (true) {
-      images = imagesRepository.findImagesWithStatusAndNonNullJpgName(VALIDATED, TRAINABLE, PageRequest.of(offset, csvBatchSize));
+      images = imagesRepository.findImagesWithStatusAndNonNullJpgName(VALIDATED, TRAINABLE,
+          PageRequest.of(offset, csvBatchSize));
       if (images.isEmpty()) {
         logger.info("csv report completed");
         break;
@@ -408,36 +428,35 @@ public class ImageService {
   }
 
   private static void appendImage(ImageDB image, StringBuilder csvBuilder, Set<String> categories) {
+    setImageMetaData(image, csvBuilder);
+    setObjectsFound(image, csvBuilder, categories);
+    csvBuilder.append("\n");
+  }
 
-    csvBuilder.append(image.getFolder())
+  private static void setObjectsFound(ImageDB image, StringBuilder csvBuilder, Set<String> categories) {
+    HashMap<String, Integer> categoriesCount = new HashMap<>();
+    categories.forEach(x -> categoriesCount.put(x, 0));
+
+    image.getCoordinates().forEach(x -> categoriesCount.put(x.getAnimalId(), categoriesCount.get(x.getAnimalId()) + 1));
+
+    for (String category : categories) {
+      csvBuilder.append(",");
+      csvBuilder.append(categoriesCount.get(category));
+    }
+  }
+
+  private static void setImageMetaData(ImageDB image, StringBuilder csvBuilder) {
+    setImageMetaData(csvBuilder.append(image.getFolder())
         .append(",")
         .append(image.getName())
         .append(",")
         .append(image.getDate())
-        .append(",")
-        .append(image.getTime());
+        .append(","), image.getTime());
+  }
 
-    List<CoordinateDB> sortedCoordinates = image.getCoordinates().stream()
-        .sorted(Comparator.comparing(CoordinateDB::getAnimalId)).toList();
-
-    int categoriesIdx = 0;
-    int coordinatesIdx = 0;
-
-    List<String> categoriesList = new ArrayList<>(categories);
-    while (categoriesIdx < categoriesList.size()) {
-      int count = 0;
-
-      while (coordinatesIdx < image.getCoordinates().size() &&
-          categoriesList.get(categoriesIdx).equals(sortedCoordinates.get(coordinatesIdx).getAnimalId())) {
-        count++;
-        coordinatesIdx++;
-      }
-      csvBuilder.append(",");
-      csvBuilder.append(count);
-      categoriesIdx++;
-    }
-
-    csvBuilder.append("\n");
+  private static void setImageMetaData(StringBuilder csvBuilder, String image) {
+    csvBuilder
+        .append(image);
   }
 
 
