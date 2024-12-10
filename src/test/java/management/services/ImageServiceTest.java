@@ -135,6 +135,7 @@ class ImageServiceTest {
     assertEquals("11:20:04", image1.getTime());
     assertEquals("2024-08-14", image1.getDate());
     assertEquals("GS://dir/image1.jpg", image1.getGcsFullPath());
+    assertEquals(ImageStatus.PENDING, image1.getStatus());
 
     ImageDB image2 = captor.getAllValues().get(1);
     assertEquals("image2.jpg", image2.getName());
@@ -142,5 +143,6 @@ class ImageServiceTest {
     assertEquals("03:23:14", image2.getTime());
     assertEquals("2024-08-15", image2.getDate());
     assertEquals("GS://dir/image2.jpg", image2.getGcsFullPath());
+    assertEquals(ImageStatus.PENDING, image2.getStatus());
   }
 }
