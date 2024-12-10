@@ -86,7 +86,6 @@ function UserManagement() {
                 Authorization: `Bearer ${localStorage.getItem('authToken')}`,
             });
             setUsers((prevUsers) => [...prevUsers, ...createdUsers]);
-            alert('Users added successfully!');
             setShowAddUsersModal(false);
             setNewUsers("");
             setAddUserError('');
@@ -100,7 +99,7 @@ function UserManagement() {
             const updatedUserData = {
                 name: selectedUser.name,
                 email: selectedUser.email,
-                role, // New role value
+                role,
             };
 
             try {
@@ -113,7 +112,6 @@ function UserManagement() {
                         user.email === selectedUser.email ? updatedUser : user
                     )
                 );
-                alert(`Role updated to ${role} for user: ${selectedUser.email}`);
                 setShowChangeRoleModal(false);
             } catch (err) {
                 alert(err.message);
@@ -133,7 +131,6 @@ function UserManagement() {
                     Authorization: `Bearer ${localStorage.getItem('authToken')}`,
                 });
                 setUsers((prevUsers) => prevUsers.filter((user) => user.email !== selectedUser.email));
-                alert(`User with email ${selectedUser.email} has been deleted.`);
                 setShowDeleteUserModal(false);
             } catch (err) {
                 alert(err.message);
