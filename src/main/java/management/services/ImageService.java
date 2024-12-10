@@ -155,8 +155,7 @@ public class ImageService {
       imagesRepository.save(imageDB);
     }
     catch (Exception e) {
-      logger.error("failed to save image {}", imagePath);
-      throw e;
+      logger.error("failed to save image {}", imagePath, e);
     }
 
   }
