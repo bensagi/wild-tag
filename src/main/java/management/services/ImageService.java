@@ -86,7 +86,7 @@ public class ImageService {
 
   @Value("${job.nats.imageProcessingTopic}")
   private String topic;
-  @Value("${imageValidationMinutes:30}")
+  @Value("${imageValidationMinutes:5}")
   private int imageValidationMinutes;
 
   public ImageService(CloudStorageService cloudStorageService, ImagesRepository imagesRepository,
@@ -153,6 +153,7 @@ public class ImageService {
     try {
       ImageDB imageDB = new ImageDB();
       imageDB.setGcsFullPath(imagePath);
+      imageDB.setStatus(PENDING);
 
       setImageMetaData(imagePath, imageNameToMetaData, imageDB);
 
