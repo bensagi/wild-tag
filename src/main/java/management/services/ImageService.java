@@ -4,6 +4,7 @@ import static management.entities.images.ImageStatus.PENDING;
 import static management.entities.images.ImageStatus.TAGGED;
 import static management.entities.images.ImageStatus.TRAINABLE;
 import static management.entities.images.ImageStatus.VALIDATED;
+import static management.services.CloudStorageService.GS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wild_tag.model.CategoriesApi;
@@ -122,7 +123,7 @@ public class ImageService {
     logger.info("read meta data");
     Map<String, ImageMetaData> imageNameToMetaData = extractFolderMetaData(imagesBucketApi, files);
 
-    int numOfImages = files.size() - 1;
+    int numOfImages = files.size();
     int currentImage = 0;
     logger.info("start process {} images", numOfImages);
     for (String file : files) {
@@ -168,7 +169,7 @@ public class ImageService {
       return;
     }
 
-    ImageMetaData imageMetaData = imageNameToMetaData.get(imagePath.replace("GS://", "").split("/", 2)[1]);
+    ImageMetaData imageMetaData = imageNameToMetaData.get(imagePath.replace(GS, "").split("/", 3)[2]);
     if (imageMetaData == null) {
       logger.warn("missing image meta data for {}", imagePath);
       imageMetaData = new ImageMetaData(null, null, null, null);

@@ -1,8 +1,8 @@
 package management.services;
 
+import static management.services.CloudStorageService.GS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 
 import com.wild_tag.model.ImagesBucketApi;
@@ -113,14 +113,14 @@ class ImageServiceTest {
 
     String bucketName = "bucket/dir";
     List<String> filesList = new ArrayList<>();
-    filesList.add("GS://dir/image1.jpg");
-    filesList.add("GS://dir/image2.jpg");
-    filesList.add("GS://dir/metaData.csv");
+    filesList.add(GS + "bucket/dir/image1.jpg");
+    filesList.add(GS + "bucket/dir/image2.jpg");
+    filesList.add(GS + "bucket/dir/metaData.csv");
 
     byte[] byteArray = Files.readAllBytes(Paths.get("src/test/resources/meta.csv"));
 
     Mockito.when(cloudStorageService.listFilesInPath(bucketName)).thenReturn(filesList);
-    Mockito.when(cloudStorageService.getGCSFileContent("GS://dir/metaData.csv")).thenReturn(new GCSFileContent(byteArray, "csv"));
+    Mockito.when(cloudStorageService.getGCSFileContent(GS + "bucket/dir/metaData.csv")).thenReturn(new GCSFileContent(byteArray, "csv"));
 
     imageService.loadImagesBackground(new ImagesBucketApi().bucketName(bucketName));
 
@@ -134,13 +134,13 @@ class ImageServiceTest {
     assertEquals("dir", image1.getFolder());
     assertEquals("11:20:04", image1.getTime());
     assertEquals("2024-08-14", image1.getDate());
-    assertEquals("GS://dir/image1.jpg", image1.getGcsFullPath());
+    assertEquals(GS + "bucket/dir/image1.jpg", image1.getGcsFullPath());
 
     ImageDB image2 = captor.getAllValues().get(1);
     assertEquals("image2.jpg", image2.getName());
     assertEquals("dir", image2.getFolder());
     assertEquals("03:23:14", image2.getTime());
     assertEquals("2024-08-15", image2.getDate());
-    assertEquals("GS://dir/image2.jpg", image2.getGcsFullPath());
+    assertEquals(GS + "bucket/dir/image2.jpg", image2.getGcsFullPath());
   }
 }
