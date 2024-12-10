@@ -7,9 +7,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wild_tag.model.CategoriesApi;
 import com.wild_tag.model.ImageStatusApi;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import management.entities.images.CoordinateDB;
+import management.entities.images.ImageDB;
+import management.entities.images.ImageStatus;
 import management.entities.users.UserDB;
 import management.enums.UserRole;
 import management.repositories.ImagesRepository;
@@ -47,9 +53,8 @@ public class ImagesControllerTest extends SpringbootTestBase {
   protected ObjectMapper objectMapper = new ObjectMapper();
 
   @BeforeEach
-  public void setUp() throws Exception {
+  public void setUp() {
     mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-//    imageRepository.deleteAll();
   }
 
   @Test
@@ -180,5 +185,82 @@ public class ImagesControllerTest extends SpringbootTestBase {
 
     Assertions.assertNotEquals(image.getId(), image2.getId());
     Assertions.assertEquals(ImageStatusApi.PENDING, image2.getStatus());
+  }
+
+  @Test
+  @WithMockUser(roles = {"ADMIN"})
+  public void testReportGeneration() throws Exception {
+
+    String expected = """
+        folder_name,jpg_name,jpg_date,jpg_time,1,2,3
+        HAYUN 14.8.24-22.9.24,IMAG0001_HAYUN 14.8.24-22.9.24.jpg,14/08/2024,11:20:04,1,0,0
+        HAYUN 14.8.24-22.9.24,IMAG0002_HAYUN 14.8.24-22.9.24.jpg,15/08/2024,3:23:14,0,2,0
+        """;
+
+    setCategories();
+
+    ImageDB image1 = new ImageDB(
+        "asd", ImageStatus.VALIDATED, null, null, List.of(new CoordinateDB("1", 0.1, 0.2, 0.3, 0.4)), "asd");
+    image1.setDate("14/08/2024");
+    image1.setFolder("HAYUN 14.8.24-22.9.24");
+    image1.setName("IMAG0001_HAYUN 14.8.24-22.9.24.jpg");
+    image1.setTime("11:20:04");
+    imageRepository.save(image1);
+
+    ImageDB image2 = new ImageDB(
+        "asd", ImageStatus.TRAINABLE, null, null, List.of(
+            new CoordinateDB("2", 0.1, 0.2, 0.3, 0.4),
+            new CoordinateDB("2", 0.1, 0.2, 0.3, 0.4)), "asd");
+    image2.setDate("15/08/2024");
+    image2.setFolder("HAYUN 14.8.24-22.9.24");
+    image2.setName("IMAG0002_HAYUN 14.8.24-22.9.24.jpg");
+    image2.setTime("3:23:14");
+    imageRepository.save(image2);
+
+
+    String result = mockMvc.perform(get("/images/downloadCsv").principal(
+            new UsernamePasswordAuthenticationToken(new UserDB("test", "test@email.com", UserRole.ADMIN), null,
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + UserRole.ADMIN.name())))))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("text/csv")).andReturn().getResponse().getContentAsString();
+
+    System.out.println(result);
+    Assertions.assertEquals(expected, result);
+
+  }
+
+  @Test
+  @WithMockUser(roles = {"ADMIN"})
+  public void testReportGeneration_imageWithNoMetaData() throws Exception {
+    setCategories();
+
+    String expected = "folder_name,jpg_name,jpg_date,jpg_time,1,2,3\n";
+
+    ImageDB image1 = new ImageDB(
+        "asd", ImageStatus.VALIDATED, null, null, List.of(new CoordinateDB("1", 0.1, 0.2, 0.3, 0.4)), "asd");
+    imageRepository.save(image1);
+
+    String result = mockMvc.perform(get("/images/downloadCsv").principal(
+            new UsernamePasswordAuthenticationToken(new UserDB("test", "test@email.com", UserRole.ADMIN), null,
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + UserRole.ADMIN.name())))))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("text/csv")).andReturn().getResponse().getContentAsString();
+
+    Assertions.assertEquals(expected, result);
+  }
+
+  private void setCategories() throws Exception {
+    CategoriesApi newCategories = new CategoriesApi();
+    Map<String, String> entries = new HashMap<>();
+    entries.put("1", "יחמור");
+    entries.put("2", "נאור");
+    entries.put("3", "כלום");
+    newCategories.setEntries(entries);
+
+    mockMvc.perform(put("/categories")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(newCategories)))
+        .andExpect(status().isOk())
+        .andExpect(content().string("Categories updated successfully."));
   }
 }

@@ -2,9 +2,14 @@ package management.services;
 
 import static management.entities.images.ImageStatus.PENDING;
 import static management.entities.images.ImageStatus.TAGGED;
+import static management.entities.images.ImageStatus.TRAINABLE;
 import static management.entities.images.ImageStatus.VALIDATED;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.wild_tag.model.CategoriesApi;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
 import java.util.Calendar;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wild_tag.model.CoordinatesApi;
@@ -20,14 +25,18 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import management.entities.images.CoordinateDB;
-import management.entities.images.ImageContent;
+import management.entities.images.GCSFileContent;
 import management.entities.images.ImageDB;
 import management.entities.images.ImageStatus;
 import management.entities.users.UserDB;
 import management.repositories.ImagesRepository;
 import management.repositories.UserRepository;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,6 +66,10 @@ public class ImageService {
   @Value("${validate_rate:15}")
   private Integer validateRate;
 
+  @Value("${csv_batch_size:1000}")
+  private Integer csvBatchSize;
+
+
   private final Map<String, Integer> categoriesHistogram = new HashMap<>();
 
   private final CloudStorageService cloudStorageService;
@@ -65,9 +78,11 @@ public class ImageService {
 
   private final UserRepository usersRepository;
 
-  private NATSPublisher natsPublisher;
+  private final NATSPublisher natsPublisher;
 
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
+
+  private final CategoriesService categoriesService;
 
   @Value("${job.nats.imageProcessingTopic}")
   private String topic;
@@ -75,11 +90,12 @@ public class ImageService {
   private int imageValidationMinutes;
 
   public ImageService(CloudStorageService cloudStorageService, ImagesRepository imagesRepository,
-      UserRepository usersRepository, NATSPublisher natsPublisher) {
+      UserRepository usersRepository, NATSPublisher natsPublisher, CategoriesService categoriesService) {
     this.cloudStorageService = cloudStorageService;
     this.imagesRepository = imagesRepository;
     this.usersRepository = usersRepository;
     this.natsPublisher = natsPublisher;
+    this.categoriesService = categoriesService;
     this.objectMapper = new ObjectMapper();
   }
 
@@ -99,16 +115,68 @@ public class ImageService {
     natsPublisher.sendMessage(topic, objectMapper.writeValueAsString(imagesBucketApi));
   }
 
-  public void loadImagesBackground(ImagesBucketApi imagesBucketApi) {
+  public void loadImagesBackground(ImagesBucketApi imagesBucketApi) throws IOException {
     logger.info("Loading images from bucket: {}", imagesBucketApi.getBucketName());
-    List<String> images = cloudStorageService.listBucket(imagesBucketApi.getBucketName());
-    images.forEach(imagePath -> {
+    List<String> files = cloudStorageService.listFilesInPath(imagesBucketApi.getBucketName());
+
+    logger.info("read meta data");
+    Map<String, ImageMetaData> imageNameToMetaData = extractFolderMetaData(imagesBucketApi, files);
+
+    int numOfImages = files.size() - 1;
+    int currentImage = 0;
+    logger.info("start process {} images", numOfImages);
+    for (String file : files) {
+      insertImageToDB(file, imageNameToMetaData, numOfImages, currentImage);
+      currentImage++;
+    }
+    logger.info(files.size() + " images loaded successfully");
+  }
+
+  private Map<String, ImageMetaData> extractFolderMetaData(ImagesBucketApi imagesBucketApi, List<String> files) {
+    try {
+      String csvUri = files.stream().filter(x -> x.endsWith(".csv")).findFirst()
+          .orElseThrow(() -> new RuntimeException("csv not found in " + imagesBucketApi.getBucketName()));
+      GCSFileContent csvContent = cloudStorageService.getGCSFileContent(csvUri);
+      Map<String, ImageMetaData> imageNameToMetaData = loadCsvToMap(csvContent.getContent());
+      files.remove(csvUri);
+      return imageNameToMetaData;
+    }
+    catch (Exception e) {
+      logger.warn("failed to load meta data for {}. continue loading images without meta data",
+          imagesBucketApi.getBucketName(), e);
+      return null;
+    }
+  }
+
+  private void insertImageToDB(String imagePath, Map<String, ImageMetaData> imageNameToMetaData, int numOfImages,
+      int currentImage) {
+    try {
       ImageDB imageDB = new ImageDB();
       imageDB.setGcsFullPath(imagePath);
-      imageDB.setStatus(PENDING);
+
+      setImageMetaData(imagePath, imageNameToMetaData, imageDB);
+
       imagesRepository.save(imageDB);
-    });
-    logger.info(images.size() + " images loaded successfully");
+      logger.debug("processed {}/{} images", currentImage, numOfImages);
+    } catch (Exception e) {
+      logger.error("failed to save image {}", imagePath, e);
+    }
+  }
+
+  private void setImageMetaData(String imagePath, Map<String, ImageMetaData> imageNameToMetaData, ImageDB imageDB) {
+    if (imageNameToMetaData == null) {
+      return;
+    }
+
+    ImageMetaData imageMetaData = imageNameToMetaData.get(imagePath.replace("GS://", "").split("/", 2)[1]);
+    if (imageMetaData == null) {
+      logger.warn("missing image meta data for {}", imagePath);
+      imageMetaData = new ImageMetaData(null, null, null, null);
+    }
+    imageDB.setFolder(imageMetaData.folderName());
+    imageDB.setName(imageMetaData.jpgName());
+    imageDB.setTime(imageMetaData.jpgTime());
+    imageDB.setDate(imageMetaData.jpgDate());
   }
 
   public List<ImageApi> getImages() {
@@ -122,7 +190,8 @@ public class ImageService {
       imageDB.setTaggerUser(userDB);
       imageDB.setStatus(ImageStatus.TAGGED);
       imageDB.setStartHandled(getMinTimestamp());
-      imageDB.setCoordinates(imageApi.getCoordinates().stream().map(this::convertCoordinatesApiToCoordinatesDB).toList());
+      imageDB.setCoordinates(
+          imageApi.getCoordinates().stream().map(this::convertCoordinatesApiToCoordinatesDB).toList());
       imagesRepository.save(imageDB);
     }
   }
@@ -218,7 +287,8 @@ public class ImageService {
 
   private String moveImageToDataSetPath(boolean isValidate, String gcsFullPath, String objectName) {
 
-    String destinationObject = String.format("%s/%s/%s/%s/%s", storageRootDir, DATASET, IMAGES, isValidate ? VAL : TRAIN, objectName);
+    String destinationObject = String.format("%s/%s/%s/%s/%s", storageRootDir, DATASET, IMAGES,
+        isValidate ? VAL : TRAIN, objectName);
     String copiedImageUri = cloudStorageService.copyObject(gcsFullPath, dataSetBucket, destinationObject);
     cloudStorageService.deleteObject(gcsFullPath);
     return copiedImageUri;
@@ -259,14 +329,14 @@ public class ImageService {
     return outputStream.toByteArray();
   }
 
-  public ImageContent getImageContent(String imageId) {
+  public GCSFileContent getImageContent(String imageId) {
     ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageId)).orElseThrow();
-    return cloudStorageService.getImage(imageDB.getGcsFullPath());
+    return cloudStorageService.getGCSFileContent(imageDB.getGcsFullPath());
   }
-  
+
   public ImageApi getNextTask(String email) {
 
-    synchronized(IMAGE_ASSIGN_LOCK) {
+    synchronized (IMAGE_ASSIGN_LOCK) {
       UserDB user = usersRepository.findByEmail(email).orElseThrow();
 
       Timestamp startHandled = getTimestampMinutesAgo(imageValidationMinutes);
@@ -299,5 +369,98 @@ public class ImageService {
 
   static Timestamp getMinTimestamp() {
     return Timestamp.valueOf("1970-01-01 00:00:00");
+  }
+
+  private Map<String, ImageMetaData> loadCsvToMap(byte[] csvData) throws IOException {
+    Map<String, ImageMetaData> imageMetaDataMap = new HashMap<>();
+
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(csvData)));
+        CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withDelimiter(',').withHeader())) {
+
+      for (CSVRecord record : csvParser) {
+        String folderName = record.get("folder_name");
+        String jpgName = record.get("jpg_name");
+        String jpgDate = record.get("jpg_date");
+        String jpgTime = record.get("jpg_time");
+
+        ImageMetaData imageMetaData = new ImageMetaData(folderName, jpgName, jpgDate, jpgTime);
+        imageMetaDataMap.put(jpgName, imageMetaData);
+      }
+    }
+
+    return imageMetaDataMap;
+
+  }
+
+  public String createReport() throws JsonProcessingException {
+    StringBuilder csvBuilder = new StringBuilder();
+
+    CategoriesApi categories = categoriesService.getCategoriesOrThrow();
+
+    setReportHeader(csvBuilder, categories);
+
+    int offset = 0;
+    List<ImageDB> images;
+    while (true) {
+      images = imagesRepository.findImagesWithStatusAndNonNullJpgName(VALIDATED, TRAINABLE,
+          PageRequest.of(offset, csvBatchSize));
+      if (images.isEmpty()) {
+        logger.info("csv report completed");
+        break;
+      }
+
+      for (ImageDB image : images) {
+        appendImage(image, csvBuilder, categories.getEntries().keySet());
+      }
+      offset += csvBatchSize;
+      logger.debug("finished batch for report. current offset = {}", offset);
+    }
+
+    return csvBuilder.toString();
+  }
+
+  private static void setReportHeader(StringBuilder csvBuilder, CategoriesApi categories) {
+    csvBuilder.append("folder_name,jpg_name,jpg_date,jpg_time");
+    for (String category : categories.getEntries().keySet()) {
+      csvBuilder.append(",").append(category);
+    }
+    csvBuilder.append("\n");
+  }
+
+  private static void appendImage(ImageDB image, StringBuilder csvBuilder, Set<String> categories) {
+    setImageMetaData(image, csvBuilder);
+    setObjectsFound(image, csvBuilder, categories);
+    csvBuilder.append("\n");
+  }
+
+  private static void setObjectsFound(ImageDB image, StringBuilder csvBuilder, Set<String> categories) {
+    HashMap<String, Integer> categoriesCount = new HashMap<>();
+    categories.forEach(x -> categoriesCount.put(x, 0));
+
+    image.getCoordinates().forEach(x -> categoriesCount.put(x.getAnimalId(), categoriesCount.get(x.getAnimalId()) + 1));
+
+    for (String category : categories) {
+      csvBuilder.append(",");
+      csvBuilder.append(categoriesCount.get(category));
+    }
+  }
+
+  private static void setImageMetaData(ImageDB image, StringBuilder csvBuilder) {
+    setImageMetaData(csvBuilder.append(image.getFolder())
+        .append(",")
+        .append(image.getName())
+        .append(",")
+        .append(image.getDate())
+        .append(","), image.getTime());
+  }
+
+  private static void setImageMetaData(StringBuilder csvBuilder, String image) {
+    csvBuilder
+        .append(image);
+  }
+
+
+  record ImageMetaData(String folderName, String jpgName, String jpgDate, String jpgTime) {
+
   }
 }

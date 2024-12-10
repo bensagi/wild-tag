@@ -11,7 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import management.entities.images.ImageContent;
+import management.entities.images.GCSFileContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,15 +31,23 @@ public class CloudStorageService {
     this.storageClient = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
   }
 
+  public List<String> listFilesInPath(String path) {
+    int slashIndex = path.indexOf('/');
+    if (slashIndex == -1) {
+      throw new IllegalArgumentException("The URI should contain a '/' after the bucket name");
+    }
 
-  public List<String> listBucket(String bucketName) {
+    String bucketName = path.substring(0, slashIndex);
+    String prefix = path.substring(slashIndex + 1);
+
     List<String> files = new ArrayList<>();
     storageClient
-        .list(bucketName)
+        .list(bucketName, Storage.BlobListOption.prefix(prefix))
         .iterateAll()
         .forEach(blob -> files.add("gs://" + blob.getBucket() + "/" + blob.getName()));
     return files;
   }
+
 
   public String uploadFileToStorage(String bucketName, String folder, String fileName, byte[] bytes) {
     String filePath = StringUtils.isEmpty(folder) ? fileName : folder + "/" + fileName;
@@ -87,7 +95,7 @@ public class CloudStorageService {
     }
   }
 
-  public ImageContent getImage(String uri) {
+  public GCSFileContent getGCSFileContent(String uri) {
     Blob blob = storageClient.get(getGetBlobId(uri));
     if (blob == null) {
       throw new RuntimeException("No such object exists");
@@ -95,8 +103,6 @@ public class CloudStorageService {
     String contentType = blob.getContentType();
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     blob.downloadTo(outputStream);
-    return new ImageContent(outputStream.toByteArray(), contentType);
+    return new GCSFileContent(outputStream.toByteArray(), contentType);
   }
-
-
 }

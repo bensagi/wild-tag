@@ -31,7 +31,22 @@ public class ImageDB extends AbstractEntity {
   private String gcsTaggedPath;
 
   @Column(name = "start_handled")
-  Timestamp startHandled = Timestamp.valueOf("1970-01-01 00:00:00");
+  private Timestamp startHandled = Timestamp.valueOf("1970-01-01 00:00:00");
+
+  @Column(name = "folder", columnDefinition = "text")
+  private String folder;
+
+  @Column(name = "name", columnDefinition = "text")
+  private String name;
+
+
+  @Column(name = "date", columnDefinition = "text")
+  private String date;
+
+
+  @Column(name = "time_taken", columnDefinition = "text")
+  private String time;
+
 
   public ImageDB() {
     super();
@@ -107,6 +122,42 @@ public class ImageDB extends AbstractEntity {
 
   public ImageDB setStartHandled(Timestamp startHandled) {
     this.startHandled = startHandled;
+    return this;
+  }
+
+  public String getFolder() {
+    return folder;
+  }
+
+  public ImageDB setFolder(String folder) {
+    this.folder = folder;
+    return this;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public ImageDB setName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  public String getDate() {
+    return date;
+  }
+
+  public ImageDB setDate(String date) {
+    this.date = date;
+    return this;
+  }
+
+  public String getTime() {
+    return time;
+  }
+
+  public ImageDB setTime(String time) {
+    this.time = time;
     return this;
   }
 }

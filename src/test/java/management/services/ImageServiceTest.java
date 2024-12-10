@@ -5,10 +5,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 
+import com.wild_tag.model.ImagesBucketApi;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import management.entities.images.CoordinateDB;
+import management.entities.images.GCSFileContent;
 import management.entities.images.ImageDB;
 import management.entities.images.ImageStatus;
 import management.entities.users.UserDB;
@@ -27,9 +31,11 @@ class ImageServiceTest {
   UserRepository userRepository = Mockito.mock(UserRepository.class);
   CloudStorageService cloudStorageService = Mockito.mock(CloudStorageService.class);
   private final NATSPublisher natsPublisher = Mockito.mock(NATSPublisher.class);
+  private final CategoriesService categoriesService = Mockito.mock(CategoriesService.class);
 
 
-  ImageService imageService = new ImageService(cloudStorageService, imagesRepository,  userRepository, natsPublisher);
+  ImageService imageService = new ImageService(cloudStorageService, imagesRepository,  userRepository, natsPublisher,
+      categoriesService);
 
   @BeforeEach
   public void setUp() {
@@ -100,5 +106,41 @@ class ImageServiceTest {
 
     assertEquals(ImageStatus.TRAINABLE, savedImage.getStatus());
     assertEquals(String.format("GS://%s/%s", DATA_SET_BUCKET, "ROOT/dataset/images/val/yahmor.png"), savedImage.getGcsTaggedPath());
+  }
+
+  @Test
+  public void testLoadImagesBackground() throws IOException {
+
+    String bucketName = "bucket/dir";
+    List<String> filesList = new ArrayList<>();
+    filesList.add("GS://dir/image1.jpg");
+    filesList.add("GS://dir/image2.jpg");
+    filesList.add("GS://dir/metaData.csv");
+
+    byte[] byteArray = Files.readAllBytes(Paths.get("src/test/resources/meta.csv"));
+
+    Mockito.when(cloudStorageService.listFilesInPath(bucketName)).thenReturn(filesList);
+    Mockito.when(cloudStorageService.getGCSFileContent("GS://dir/metaData.csv")).thenReturn(new GCSFileContent(byteArray, "csv"));
+
+    imageService.loadImagesBackground(new ImagesBucketApi().bucketName(bucketName));
+
+    ArgumentCaptor<ImageDB> captor = ArgumentCaptor.forClass(ImageDB.class);
+
+    Mockito.verify(imagesRepository, times(2)).save(captor.capture());
+
+    ImageDB image1 = captor.getAllValues().get(0);
+
+    assertEquals("image1.jpg", image1.getName());
+    assertEquals("dir", image1.getFolder());
+    assertEquals("11:20:04", image1.getTime());
+    assertEquals("2024-08-14", image1.getDate());
+    assertEquals("GS://dir/image1.jpg", image1.getGcsFullPath());
+
+    ImageDB image2 = captor.getAllValues().get(1);
+    assertEquals("image2.jpg", image2.getName());
+    assertEquals("dir", image2.getFolder());
+    assertEquals("03:23:14", image2.getTime());
+    assertEquals("2024-08-15", image2.getDate());
+    assertEquals("GS://dir/image2.jpg", image2.getGcsFullPath());
   }
 }

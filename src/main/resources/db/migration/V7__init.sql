@@ -1,0 +1,15 @@
+ALTER TABLE images
+ADD COLUMN folder TEXT;
+
+ALTER TABLE images
+ADD COLUMN name TEXT;
+
+ALTER TABLE images
+ADD COLUMN date TEXT;
+
+ALTER TABLE images
+ADD COLUMN time_taken TEXT;
+
+ALTER TABLE images
+ADD CONSTRAINT unique_name UNIQUE (name);
+

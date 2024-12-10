@@ -4,11 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wild_tag.model.ImageApi;
 import com.wild_tag.model.ImagesBucketApi;
 import java.util.List;
-import management.entities.images.ImageContent;
+import management.entities.images.GCSFileContent;
 import management.enums.UserRole.UserRoleNames;
 import management.security.UserPrincipalParam;
 import management.services.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +59,7 @@ public class ImagesController {
   @GetMapping("{imageId}")
   @Secured({UserRoleNames.ADMIN_ROLE, UserRoleNames.USER_ROLE})
   public ResponseEntity<byte[]> getImage(@PathVariable String imageId) {
-    ImageContent imageContent = imageService.getImageContent(imageId);
+    GCSFileContent imageContent = imageService.getImageContent(imageId);
     return ResponseEntity.ok()
         .contentType(MediaType.valueOf(imageContent.getContentType()))
         .body(imageContent.getContent());
@@ -70,4 +71,17 @@ public class ImagesController {
     ImageApi nextTask =  imageService.getNextTask(email);
     return ResponseEntity.ok(nextTask);
   }
+
+  @GetMapping("/downloadCsv")
+  @Secured({UserRoleNames.ADMIN_ROLE})
+  public ResponseEntity<String> downloadCsv() throws JsonProcessingException {
+    String csvData = imageService.createReport();
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Content-Disposition", "attachment; filename=data.csv");
+    headers.add("Content-Type", "text/csv");
+
+    return new ResponseEntity<>(csvData, headers, HttpStatus.OK);
+  }
+
 }

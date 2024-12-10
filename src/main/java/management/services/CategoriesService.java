@@ -1,11 +1,13 @@
 package management.services;
 
+import com.github.dockerjava.api.exception.BadRequestException;
 import com.wild_tag.model.CategoriesApi;import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import management.entities.CategoriesDB;
 import management.repositories.CategoriesRepository;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -17,6 +19,15 @@ public class CategoriesService {
   public CategoriesService(CategoriesRepository categoriesRepository) {
     this.categoriesRepository = categoriesRepository;
     this.objectMapper = new ObjectMapper();
+  }
+
+  @NotNull
+  public CategoriesApi getCategoriesOrThrow() throws JsonProcessingException {
+    CategoriesApi categories = getCategories();
+    if (CollectionUtils.isEmpty(categories.getEntries())) {
+      throw new BadRequestException("no categories to manage by");
+    }
+    return categories;
   }
 
   public CategoriesApi getCategories() throws JsonProcessingException {
