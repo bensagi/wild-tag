@@ -1,5 +1,5 @@
 .image-tag-page {
-    position: relative; /* Added for loading overlay positioning */
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -12,12 +12,14 @@
     overflow-y: auto;
     width: 80vw;
     height: 80vh;
+    font-family: sans-serif;
 }
 
 .image-tag-content {
     display: flex;
     width: 100%;
     height: 100%;
+    position: relative;
 }
 
 .image-tag-div {
@@ -27,6 +29,9 @@
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
 }
 
 .image-attributes {
@@ -37,6 +42,10 @@
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     overflow-y: auto;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .image-attributes h3 {
@@ -49,13 +58,22 @@
     padding-bottom: 8px;
 }
 
-.image-attributes ul {
+/* RTL layout for animal counts */
+.animal-counts {
+    flex: 1;
+    overflow: auto;
+    direction: rtl;
+    unicode-bidi: bidi-override;
+    text-align: right;
+}
+
+.animal-counts ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.image-attributes li {
+.animal-counts li {
     display: flex;
     align-items: center;
     margin-bottom: 12px;
@@ -67,70 +85,74 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    margin-right: 8px;
+    margin-left: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .animal-name {
     font-weight: bold;
     color: #333;
-    margin-right: 4px;
 }
 
 .controls {
-    position: absolute;
-    bottom: 16px;
-    left: 71%; /* Adjust this value to move it further left */
+    margin-top: 16px;
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
     background-color: rgba(255, 255, 255, 0.8);
     padding: 8px;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 10;
 }
 
-
-.button-clear,
-.button-undo,
-.button-redo,
-.button-submit,
-.animal-select {
-    padding: 6px 12px;
-    font-size: 12px;
-    border: none;
-    border-radius: 2px;
-    cursor: pointer;
-}
-
-.animal-select {
-    background-color: white;
-    border: 1px solid #ccc;
-    padding: 6px 12px;
+.big-button {
+    padding: 12px 24px;
     font-size: 14px;
-    width: 150px; /* Set a wider width */
-    border-radius: 4px; /* Slightly rounded corners */
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    color: #fff;
+    background: linear-gradient(135deg, #4e73df, #375a7f); /* Distinct blue gradient */
+    text-decoration: none;
+    font-family: sans-serif;
+}
+
+.big-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.big-button:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 .button-clear {
-    background-color: #ff6b6b;
-    color: white;
-}
-
-.button-undo {
-    background-color: #f0ad4e;
-    color: white;
-}
-
-.button-redo {
-    background-color: #5bc0de;
-    color: white;
+    background: linear-gradient(135deg, #57c84d, #419e37); /* Green gradient */
 }
 
 .button-submit {
-    background-color: #4caf50;
-    color: white;
+    background: linear-gradient(135deg, #fc5a5a, #c44a4a); /* Red gradient */
 }
+
+.button-validate {
+    background: linear-gradient(135deg, #4dbaf9, #378bd7); /* Light blue gradient */
+}
+
+.button-edit {
+    background: linear-gradient(135deg, #b077d1, #8d56a8); /* Purple gradient */
+}
+
+.button-cancel {
+    background: linear-gradient(135deg, #e3b26b, #b58c4b); /* Warm brown gradient */
+}
+
+.button-next {
+    background: linear-gradient(135deg, #f8c773, #e8a840); /* Yellow-orange gradient */
+}
+
 
 /* Loading Overlay Styles */
 .loading-overlay {
@@ -147,34 +169,12 @@
 }
 
 .loader {
-    border: 8px solid #f3f3f3; /* Light grey */
-    border-top: 8px solid #3498db; /* Blue */
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
     border-radius: 50%;
     width: 80px;
     height: 80px;
     animation: spin 1.5s linear infinite;
-}
-
-.loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(255, 255, 255, 0.8);
-    z-index: 100;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.loader {
-    border: 8px solid #f3f3f3; /* Light grey */
-    border-top: 8px solid #3498db; /* Blue */
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -184,4 +184,58 @@
     100% {
         transform: rotate(360deg);
     }
+}
+
+/* Popup for animal selection */
+.animal-popup {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+.animal-popup h4 {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4px;
+    text-align: center;
+}
+
+.animal-list {
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.animal-list-item {
+    display: flex;
+    align-items: center;
+    padding: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #f7f7f7;
+    font-size: 14px;
+    transition: background 0.2s;
+    font-family: sans-serif;
+}
+
+.animal-list-item:hover {
+    background: #e0f7fa;
+}
+
+.animal-list-item.selected {
+    background: #b2ebf2;
+    font-weight: bold;
 }
