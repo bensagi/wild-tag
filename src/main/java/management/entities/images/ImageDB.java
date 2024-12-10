@@ -33,19 +33,19 @@ public class ImageDB extends AbstractEntity {
   @Column(name = "start_handled")
   private Timestamp startHandled = Timestamp.valueOf("1970-01-01 00:00:00");
 
-  @Column(name = "folder_name", columnDefinition = "text")
+  @Column(name = "folder", columnDefinition = "text")
   private String folder;
 
-  @Column(name = "jbg_name", columnDefinition = "text")
-  private String jpgName;
+  @Column(name = "name", columnDefinition = "text")
+  private String name;
 
 
-  @Column(name = "jbg_date", columnDefinition = "text")
-  private String jpgDate;
+  @Column(name = "date", columnDefinition = "text")
+  private String date;
 
 
-  @Column(name = "jbg_time", columnDefinition = "text")
-  private String jpgTime;
+  @Column(name = "time_taken", columnDefinition = "text")
+  private String time;
 
 
   public ImageDB() {
@@ -134,30 +134,30 @@ public class ImageDB extends AbstractEntity {
     return this;
   }
 
-  public String getJpgName() {
-    return jpgName;
+  public String getName() {
+    return name;
   }
 
-  public ImageDB setJpgName(String jpgName) {
-    this.jpgName = jpgName;
+  public ImageDB setName(String name) {
+    this.name = name;
     return this;
   }
 
-  public String getJpgDate() {
-    return jpgDate;
+  public String getDate() {
+    return date;
   }
 
-  public ImageDB setJpgDate(String jpgDate) {
-    this.jpgDate = jpgDate;
+  public ImageDB setDate(String date) {
+    this.date = date;
     return this;
   }
 
-  public String getJpgTime() {
-    return jpgTime;
+  public String getTime() {
+    return time;
   }
 
-  public ImageDB setJpgTime(String jpgTime) {
-    this.jpgTime = jpgTime;
+  public ImageDB setTime(String time) {
+    this.time = time;
     return this;
   }
 }

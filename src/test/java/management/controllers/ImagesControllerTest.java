@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wild_tag.model.CategoriesApi;
 import com.wild_tag.model.ImageStatusApi;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -202,20 +201,20 @@ public class ImagesControllerTest extends SpringbootTestBase {
 
     ImageDB image1 = new ImageDB(
         "asd", ImageStatus.VALIDATED, null, null, List.of(new CoordinateDB("1", 0.1, 0.2, 0.3, 0.4)), "asd");
-    image1.setJpgDate("14/08/2024");
+    image1.setDate("14/08/2024");
     image1.setFolder("HAYUN 14.8.24-22.9.24");
-    image1.setJpgName("IMAG0001_HAYUN 14.8.24-22.9.24.jpg");
-    image1.setJpgTime("11:20:04");
+    image1.setName("IMAG0001_HAYUN 14.8.24-22.9.24.jpg");
+    image1.setTime("11:20:04");
     imageRepository.save(image1);
 
     ImageDB image2 = new ImageDB(
         "asd", ImageStatus.TRAINABLE, null, null, List.of(
             new CoordinateDB("2", 0.1, 0.2, 0.3, 0.4),
             new CoordinateDB("2", 0.1, 0.2, 0.3, 0.4)), "asd");
-    image2.setJpgDate("15/08/2024");
+    image2.setDate("15/08/2024");
     image2.setFolder("HAYUN 14.8.24-22.9.24");
-    image2.setJpgName("IMAG0002_HAYUN 14.8.24-22.9.24.jpg");
-    image2.setJpgTime("3:23:14");
+    image2.setName("IMAG0002_HAYUN 14.8.24-22.9.24.jpg");
+    image2.setTime("3:23:14");
     imageRepository.save(image2);
 
 

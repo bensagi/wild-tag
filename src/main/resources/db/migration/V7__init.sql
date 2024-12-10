@@ -1,15 +1,15 @@
 ALTER TABLE images
-ADD COLUMN folder_name TEXT;
+ADD COLUMN folder TEXT;
 
 ALTER TABLE images
-ADD COLUMN jbg_name TEXT;
+ADD COLUMN name TEXT;
 
 ALTER TABLE images
-ADD COLUMN jbg_date TEXT;
+ADD COLUMN date TEXT;
 
 ALTER TABLE images
-ADD COLUMN jbg_time TEXT;
+ADD COLUMN time_taken TEXT;
 
 ALTER TABLE images
-ADD CONSTRAINT unique_jbg_name UNIQUE (jbg_name);
+ADD CONSTRAINT unique_name UNIQUE (name);
 

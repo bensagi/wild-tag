@@ -16,7 +16,6 @@ import management.entities.images.GCSFileContent;
 import management.entities.images.ImageDB;
 import management.entities.images.ImageStatus;
 import management.entities.users.UserDB;
-import management.repositories.CategoriesRepository;
 import management.repositories.ImagesRepository;
 import management.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -131,17 +130,17 @@ class ImageServiceTest {
 
     ImageDB image1 = captor.getAllValues().get(0);
 
-    assertEquals("image1.jpg", image1.getJpgName());
+    assertEquals("image1.jpg", image1.getName());
     assertEquals("dir", image1.getFolder());
-    assertEquals("11:20:04", image1.getJpgTime());
-    assertEquals("2024-08-14", image1.getJpgDate());
+    assertEquals("11:20:04", image1.getTime());
+    assertEquals("2024-08-14", image1.getDate());
     assertEquals("GS://dir/image1.jpg", image1.getGcsFullPath());
 
     ImageDB image2 = captor.getAllValues().get(1);
-    assertEquals("image2.jpg", image2.getJpgName());
+    assertEquals("image2.jpg", image2.getName());
     assertEquals("dir", image2.getFolder());
-    assertEquals("03:23:14", image2.getJpgTime());
-    assertEquals("2024-08-15", image2.getJpgDate());
+    assertEquals("03:23:14", image2.getTime());
+    assertEquals("2024-08-15", image2.getDate());
     assertEquals("GS://dir/image2.jpg", image2.getGcsFullPath());
   }
 }
