@@ -300,30 +300,39 @@ function TaggingPage() {
 
             const boxIndex = updatedBoxes.length - 1;
             const box = updatedBoxes[boxIndex];
-            showAnimalSelectionPopupNearMouse(boxIndex, box, lastMouseUpPos);
+            showAnimalSelectionPopupNearBox(boxIndex, box);
         }
         setNewBox(null);
     };
 
-    const showAnimalSelectionPopupNearMouse = (index, box, mousePos) => {
-        if (!stageRef.current) return;
+    const showAnimalSelectionPopupNearBox = (index, box) => {
+        if (!stageRef.current || !containerRef.current) return;
 
         const popupWidth = 200;
         const popupHeight = 200;
-        const stageRect = stageRef.current.container().getBoundingClientRect();
+        const containerRect = containerRef.current.getBoundingClientRect();
 
-        let px = stageRect.left + mousePos.x + 5;
-        let py = stageRect.top + mousePos.y + 5;
+        // Calculate the bottom-right corner of the box
+        const boxEndX = box.x + box.width;
+        const boxEndY = box.y + box.height;
 
-        const imgLeft = stageRect.left;
-        const imgRight = stageRect.left + imageSize.width * canvasScale.x;
-        const imgTop = stageRect.top;
-        const imgBottom = stageRect.top + imageSize.height * canvasScale.y;
+        // Convert box coordinates to scaled positions
+        const scaledBoxEndX = boxEndX * canvasScale.x;
+        const scaledBoxEndY = boxEndY * canvasScale.y;
 
-        if (px + popupWidth > imgRight) px = imgRight - popupWidth;
-        if (py + popupHeight > imgBottom) py = imgBottom - popupHeight;
-        if (px < imgLeft) px = imgLeft;
-        if (py < imgTop) py = imgTop;
+        // Calculate position relative to the container
+        let px = scaledBoxEndX + 10; // 10px offset
+        let py = scaledBoxEndY + 10; // 10px offset
+
+        // Boundary checks to keep the popup within the container
+        if (px + popupWidth > containerRect.width) {
+            px = scaledBoxEndX - popupWidth - 10; // 10px offset from the box
+        }
+        if (py + popupHeight > containerRect.height) {
+            py = scaledBoxEndY - popupHeight - 10; // 10px offset from the box
+        }
+        if (px < 0) px = 10;
+        if (py < 0) py = 10;
 
         setPopupPosition({ x: px, y: py });
         setPendingBoxIndex(index);

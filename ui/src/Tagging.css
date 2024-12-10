@@ -239,3 +239,8 @@
     background: #b2ebf2;
     font-weight: bold;
 }
+
+/* Ensure the popup stays above other elements */
+.animal-popup {
+    pointer-events: auto;
+}
