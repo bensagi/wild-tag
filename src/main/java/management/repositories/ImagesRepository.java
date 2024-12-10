@@ -17,6 +17,13 @@ public interface ImagesRepository extends JpaRepository<ImageDB, UUID> {
 
   List<ImageDB> getByStatus(ImageStatus status, Pageable pageable);
 
+  @Query("SELECT i FROM ImageDB i WHERE (i.status = :status1 OR i.status = :status2) AND i.jpgName IS NOT NULL")
+  List<ImageDB> findImagesWithStatusAndNonNullJpgName(
+      @Param("status1") ImageStatus status1,
+      @Param("status2") ImageStatus status2,
+      Pageable pageable
+  );
+
   @Query("SELECT i FROM ImageDB i " +
       "WHERE (i.status = :status1 OR i.status = :status2) " +
       "AND (i.taggerUser IS NULL OR i.taggerUser <> :taggerUser) " +

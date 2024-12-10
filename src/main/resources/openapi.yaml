@@ -194,6 +194,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Image'
+  /images/downloadCsv:
+    get:
+      summary: Download CSV File
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/csv:
+              schema:
+                type: string
   /image/{id}:
     get:
       summary: Retrieve an image by ID

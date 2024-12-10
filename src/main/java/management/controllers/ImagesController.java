@@ -9,6 +9,7 @@ import management.enums.UserRole.UserRoleNames;
 import management.security.UserPrincipalParam;
 import management.services.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -70,4 +71,17 @@ public class ImagesController {
     ImageApi nextTask =  imageService.getNextTask(email);
     return ResponseEntity.ok(nextTask);
   }
+
+  @GetMapping("/downloadCsv")
+  @Secured({UserRoleNames.ADMIN_ROLE})
+  public ResponseEntity<String> downloadCsv() throws JsonProcessingException {
+    String csvData = imageService.createReport();
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Content-Disposition", "attachment; filename=data.csv");
+    headers.add("Content-Type", "text/csv");
+
+    return new ResponseEntity<>(csvData, headers, HttpStatus.OK);
+  }
+
 }

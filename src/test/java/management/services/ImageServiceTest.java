@@ -16,6 +16,7 @@ import management.entities.images.GCSFileContent;
 import management.entities.images.ImageDB;
 import management.entities.images.ImageStatus;
 import management.entities.users.UserDB;
+import management.repositories.CategoriesRepository;
 import management.repositories.ImagesRepository;
 import management.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,9 +32,11 @@ class ImageServiceTest {
   UserRepository userRepository = Mockito.mock(UserRepository.class);
   CloudStorageService cloudStorageService = Mockito.mock(CloudStorageService.class);
   private final NATSPublisher natsPublisher = Mockito.mock(NATSPublisher.class);
+  private final CategoriesService categoriesService = Mockito.mock(CategoriesService.class);
 
 
-  ImageService imageService = new ImageService(cloudStorageService, imagesRepository,  userRepository, natsPublisher);
+  ImageService imageService = new ImageService(cloudStorageService, imagesRepository,  userRepository, natsPublisher,
+      categoriesService);
 
   @BeforeEach
   public void setUp() {

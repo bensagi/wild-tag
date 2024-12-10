@@ -39,7 +39,7 @@ public class Tagger implements CommandLineRunner {
       List<ImageDB> images = imageService.getValidatedImages(limit);
       logger.debug("found {} images to build tag", images.size());
       if (images.isEmpty()) {
-        logger.info("tagging proces finished. handled {} images", handled);
+        logger.info("tagging process finished. handled {} images", handled);
         return;
       }
 

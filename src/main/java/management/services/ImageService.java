@@ -2,12 +2,15 @@ package management.services;
 
 import static management.entities.images.ImageStatus.PENDING;
 import static management.entities.images.ImageStatus.TAGGED;
+import static management.entities.images.ImageStatus.TRAINABLE;
 import static management.entities.images.ImageStatus.VALIDATED;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.wild_tag.model.CategoriesApi;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Calendar;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wild_tag.model.CoordinatesApi;
@@ -20,9 +23,11 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import management.entities.images.CoordinateDB;
 import management.entities.images.GCSFileContent;
@@ -63,6 +68,10 @@ public class ImageService {
   @Value("${validate_rate:15}")
   private Integer validateRate;
 
+  @Value("${csv_batch_size:1000}")
+  private Integer csvBatchSize;
+
+
   private final Map<String, Integer> categoriesHistogram = new HashMap<>();
 
   private final CloudStorageService cloudStorageService;
@@ -71,9 +80,11 @@ public class ImageService {
 
   private final UserRepository usersRepository;
 
-  private NATSPublisher natsPublisher;
+  private final NATSPublisher natsPublisher;
 
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
+
+  private final CategoriesService categoriesService;
 
   @Value("${job.nats.imageProcessingTopic}")
   private String topic;
@@ -81,11 +92,12 @@ public class ImageService {
   private int imageValidationMinutes;
 
   public ImageService(CloudStorageService cloudStorageService, ImagesRepository imagesRepository,
-      UserRepository usersRepository, NATSPublisher natsPublisher) {
+      UserRepository usersRepository, NATSPublisher natsPublisher, CategoriesService categoriesService) {
     this.cloudStorageService = cloudStorageService;
     this.imagesRepository = imagesRepository;
     this.usersRepository = usersRepository;
     this.natsPublisher = natsPublisher;
+    this.categoriesService = categoriesService;
     this.objectMapper = new ObjectMapper();
   }
 
@@ -151,7 +163,8 @@ public class ImageService {
       imageDB.setTaggerUser(userDB);
       imageDB.setStatus(ImageStatus.TAGGED);
       imageDB.setStartHandled(getMinTimestamp());
-      imageDB.setCoordinates(imageApi.getCoordinates().stream().map(this::convertCoordinatesApiToCoordinatesDB).toList());
+      imageDB.setCoordinates(
+          imageApi.getCoordinates().stream().map(this::convertCoordinatesApiToCoordinatesDB).toList());
       imagesRepository.save(imageDB);
     }
   }
@@ -247,7 +260,8 @@ public class ImageService {
 
   private String moveImageToDataSetPath(boolean isValidate, String gcsFullPath, String objectName) {
 
-    String destinationObject = String.format("%s/%s/%s/%s/%s", storageRootDir, DATASET, IMAGES, isValidate ? VAL : TRAIN, objectName);
+    String destinationObject = String.format("%s/%s/%s/%s/%s", storageRootDir, DATASET, IMAGES,
+        isValidate ? VAL : TRAIN, objectName);
     String copiedImageUri = cloudStorageService.copyObject(gcsFullPath, dataSetBucket, destinationObject);
     cloudStorageService.deleteObject(gcsFullPath);
     return copiedImageUri;
@@ -292,10 +306,10 @@ public class ImageService {
     ImageDB imageDB = imagesRepository.findById(UUID.fromString(imageId)).orElseThrow();
     return cloudStorageService.getGCSFileContent(imageDB.getGcsFullPath());
   }
-  
+
   public ImageApi getNextTask(String email) {
 
-    synchronized(IMAGE_ASSIGN_LOCK) {
+    synchronized (IMAGE_ASSIGN_LOCK) {
       UserDB user = usersRepository.findByEmail(email).orElseThrow();
 
       Timestamp startHandled = getTimestampMinutesAgo(imageValidationMinutes);
@@ -351,6 +365,75 @@ public class ImageService {
 
   }
 
+  public String createReport() throws JsonProcessingException {
+    StringBuilder csvBuilder = new StringBuilder();
+    // Append the header
+    CategoriesApi categories = categoriesService.getCategoriesOrThrow();
 
-  record ImageMetaData(String folderName, String jpgName, String jpgDate, String jpgTime){}
+    setReportHeader(csvBuilder, categories);
+
+    int offset = 0;
+    List<ImageDB> images;
+    while (true) {
+      images = imagesRepository.findImagesWithStatusAndNonNullJpgName(VALIDATED, TRAINABLE, PageRequest.of(offset, csvBatchSize));
+      if (images.isEmpty()) {
+        logger.info("csv report completed");
+        break;
+      }
+
+      for (ImageDB image : images) {
+        appendImage(image, csvBuilder, categories.getEntries().keySet());
+      }
+      offset += csvBatchSize;
+      logger.debug("finished batch for report. current offset = {}", offset);
+    }
+
+    return csvBuilder.toString();
+  }
+
+  private static void setReportHeader(StringBuilder csvBuilder, CategoriesApi categories) {
+    csvBuilder.append("folder_name,jpg_name,jpg_date,jpg_time");
+    for (String category : categories.getEntries().keySet()) {
+      csvBuilder.append(",").append(category);
+    }
+    csvBuilder.append("\n");
+  }
+
+  private static void appendImage(ImageDB image, StringBuilder csvBuilder, Set<String> categories) {
+
+    csvBuilder.append(image.getFolder())
+        .append(",")
+        .append(image.getJpgName())
+        .append(",")
+        .append(image.getJpgDate())
+        .append(",")
+        .append(image.getJpgTime());
+
+    List<CoordinateDB> sortedCoordinates = image.getCoordinates().stream()
+        .sorted(Comparator.comparing(CoordinateDB::getAnimalId)).toList();
+
+    int categoriesIdx = 0;
+    int coordinatesIdx = 0;
+
+    List<String> categoriesList = new ArrayList<>(categories);
+    while (categoriesIdx < categoriesList.size()) {
+      int count = 0;
+
+      while (coordinatesIdx < image.getCoordinates().size() &&
+          categoriesList.get(categoriesIdx).equals(sortedCoordinates.get(coordinatesIdx).getAnimalId())) {
+        count++;
+        coordinatesIdx++;
+      }
+      csvBuilder.append(",");
+      csvBuilder.append(count);
+      categoriesIdx++;
+    }
+
+    csvBuilder.append("\n");
+  }
+
+
+  record ImageMetaData(String folderName, String jpgName, String jpgDate, String jpgTime) {
+
+  }
 }
