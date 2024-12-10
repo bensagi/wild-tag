@@ -19,7 +19,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EntityScan(basePackages = "management.entities")
 public class Tagger implements CommandLineRunner {
 
-  private Logger logger = LoggerFactory.getLogger(Tagger.class);
+  private static final Logger logger = LoggerFactory.getLogger(Tagger.class);
 
   @Autowired ImageService imageService;
 
