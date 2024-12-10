@@ -126,6 +126,9 @@ public class ImageService {
     int currentImage = 0;
     logger.info("start process {} images", numOfImages);
     for (String file : files) {
+      if (file.endsWith("/")) {
+        continue;
+      }
       insertImageToDB(file, imageNameToMetaData, numOfImages, currentImage);
       currentImage++;
     }
